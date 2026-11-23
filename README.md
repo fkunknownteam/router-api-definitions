@@ -140,6 +140,30 @@ that is why the levels are recorded per endpoint instead of per file.
 * **No secrets.** No credentials, tokens, serials or real WAN addresses. Example
   values are placeholders.
 
+## Publishing this repository
+
+The URLs baked into `registry/index.json` and `android/README.md` assume the repo
+lives at `universal-router-control/router-api-definitions`. If you fork or move
+it, change the owner in two places and regenerate:
+
+```bash
+# 1. tools/build_index.py
+REPO = "your-user/router-api-definitions"
+
+# 2. android/README.md — the REGISTRY_BASE constant
+python3 tools/build_index.py
+python3 tools/validate.py
+```
+
+Then create the remote and push with a token that has `repo` scope:
+
+```bash
+GH_TOKEN=ghp_xxx bash tools/publish.sh <owner> [repo-name]
+```
+
+The script creates the repository if it does not exist, sets `origin`, and pushes
+`main` without writing the token into `.git/config`. It needs `curl` and `jq`.
+
 ## Licence
 
 Definitions are facts about devices you own; the schemas and tooling are MIT.

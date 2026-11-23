@@ -143,7 +143,7 @@ that is why the levels are recorded per endpoint instead of per file.
 ## Publishing this repository
 
 The URLs baked into `registry/index.json` and `android/README.md` assume the repo
-lives at `universal-router-control/router-api-definitions`. If you fork or move
+lives at `fkunknownteam/router-api-definitions`. If you fork or move
 it, change the owner in two places and regenerate:
 
 ```bash

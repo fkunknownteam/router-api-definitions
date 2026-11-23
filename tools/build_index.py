@@ -15,7 +15,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REGISTRY = os.path.join(ROOT, "registry")
 INDEX = os.path.join(REGISTRY, "index.json")
-REPO = "universal-router-control/router-api-definitions"
+REPO = "fkunknownteam/router-api-definitions"
 RAW = f"https://raw.githubusercontent.com/{REPO}/main/registry"
 
 

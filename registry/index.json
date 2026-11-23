@@ -2,7 +2,7 @@
   "$schema": "../schema/index.schema.json",
   "schemaVersion": "1.0",
   "generatedBy": "tools/build_index.py",
-  "rawBase": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry",
+  "rawBase": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry",
   "vendors": {
     "tenda": [
       {
@@ -11,8 +11,8 @@
         "variants": [
           {
             "path": "registry/tenda/ac10/v1.0-fw15.03.06.50",
-            "apiUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v1.0-fw15.03.06.50/api.json",
-            "capabilitiesUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v1.0-fw15.03.06.50/capabilities.json",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v1.0-fw15.03.06.50/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v1.0-fw15.03.06.50/capabilities.json",
             "definitionVersion": "1.0.0",
             "schemaVersion": "1.0",
             "firmware": "V15.03.06.50_multi",
@@ -28,8 +28,8 @@
           },
           {
             "path": "registry/tenda/ac10/v3.0-fw03.03.16.11",
-            "apiUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v3.0-fw03.03.16.11/api.json",
-            "capabilitiesUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v3.0-fw03.03.16.11/capabilities.json",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v3.0-fw03.03.16.11/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v3.0-fw03.03.16.11/capabilities.json",
             "definitionVersion": "1.0.0",
             "schemaVersion": "1.0",
             "firmware": "V03.03.16.11_multi",
@@ -45,8 +45,8 @@
           },
           {
             "path": "registry/tenda/ac10/v4.0-fw16.03",
-            "apiUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v4.0-fw16.03/api.json",
-            "capabilitiesUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v4.0-fw16.03/capabilities.json",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v4.0-fw16.03/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v4.0-fw16.03/capabilities.json",
             "definitionVersion": "1.0.0",
             "schemaVersion": "1.0",
             "firmware": "V16.03",
@@ -67,8 +67,8 @@
   "definitions": [
     {
       "path": "registry/tenda/ac10/v1.0-fw15.03.06.50",
-      "apiUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v1.0-fw15.03.06.50/api.json",
-      "capabilitiesUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v1.0-fw15.03.06.50/capabilities.json",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v1.0-fw15.03.06.50/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v1.0-fw15.03.06.50/capabilities.json",
       "definitionVersion": "1.0.0",
       "schemaVersion": "1.0",
       "firmware": "V15.03.06.50_multi",
@@ -84,8 +84,8 @@
     },
     {
       "path": "registry/tenda/ac10/v3.0-fw03.03.16.11",
-      "apiUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v3.0-fw03.03.16.11/api.json",
-      "capabilitiesUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v3.0-fw03.03.16.11/capabilities.json",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v3.0-fw03.03.16.11/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v3.0-fw03.03.16.11/capabilities.json",
       "definitionVersion": "1.0.0",
       "schemaVersion": "1.0",
       "firmware": "V03.03.16.11_multi",
@@ -101,8 +101,8 @@
     },
     {
       "path": "registry/tenda/ac10/v4.0-fw16.03",
-      "apiUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v4.0-fw16.03/api.json",
-      "capabilitiesUrl": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry/tenda/ac10/v4.0-fw16.03/capabilities.json",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v4.0-fw16.03/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tenda/ac10/v4.0-fw16.03/capabilities.json",
       "definitionVersion": "1.0.0",
       "schemaVersion": "1.0",
       "firmware": "V16.03",

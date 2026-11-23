@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/schema/api-definition.schema.json",
+  "$id": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/api-definition.schema.json",
   "title": "Router API definition",
   "description": "Machine-readable description of one router model's local web API, as observed on one firmware line. A generic client executes a definition; it never contains vendor-specific code.",
   "type": "object",

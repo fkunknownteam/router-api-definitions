@@ -26,7 +26,7 @@ val index = DefinitionRepository.fetchIndex()   // GET registry/index.json
 Do not hardcode the raw URL in more than one place. One constant:
 
 ```kotlin
-const val REGISTRY_BASE = "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/registry"
+const val REGISTRY_BASE = "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry"
 ```
 
 ## 2. Identify the device before downloading a definition

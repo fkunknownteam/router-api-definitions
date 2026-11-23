@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/schema/capabilities.schema.json",
+  "$id": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/capabilities.schema.json",
   "title": "Router capabilities",
   "description": "Feature flags for one model and firmware line, derived only from endpoints present in the matching api.json. The Android app reads this to decide which controls to show, so a missing key means unknown and false means the device cannot do it.",
   "type": "object",

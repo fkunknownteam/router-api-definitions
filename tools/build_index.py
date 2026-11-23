@@ -30,6 +30,7 @@ def sha256(path):
 def main():
     definitions = []
     vendors = {}
+    vendor_names = {}
     for vendor in sorted(os.listdir(REGISTRY)):
         vdir = os.path.join(REGISTRY, vendor)
         if not os.path.isdir(vdir) or vendor.startswith("."):
@@ -51,9 +52,15 @@ def main():
                     continue
                 with open(api) as f:
                     doc = json.load(f)
+                vendor_names.setdefault(vendor, doc.get("vendorName") or vendor.title())
+                model_name = doc.get("model")
                 rel = os.path.relpath(d, ROOT).replace(os.sep, "/")
+                hw = doc.get("hardwareVersions") or []
+                fw_line = (doc.get("firmware") or {}).get("verified") or "?"
+                label = (f"Hardware {'/'.join(hw)}" if hw else "Hardware unknown") + f" — firmware {fw_line}"
                 entry = {
                     "path": rel,
+                    "label": label,
                     "apiUrl": f"{RAW}/{vendor}/{model}/{variant}/api.json",
                     "capabilitiesUrl": f"{RAW}/{vendor}/{model}/{variant}/capabilities.json",
                     "definitionVersion": doc["definitionVersion"],
@@ -67,7 +74,8 @@ def main():
                 variants.append(entry)
                 definitions.append(entry)
             if variants:
-                models.append({"model": model.upper(), "slug": model, "variants": variants})
+                models.append({"model": model.upper(), "slug": model,
+                               "variantCount": len(variants), "variants": variants})
         if models:
             vendors[vendor] = models
 
@@ -76,6 +84,7 @@ def main():
         "schemaVersion": "1.0",
         "generatedBy": "tools/build_index.py",
         "rawBase": RAW,
+        "vendorNames": vendor_names,
         "vendors": vendors,
         "definitions": definitions,
     }

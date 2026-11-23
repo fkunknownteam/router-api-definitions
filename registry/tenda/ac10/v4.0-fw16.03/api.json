@@ -1,7 +1,7 @@
 {
   "$schema": "../../../../schema/api-definition.schema.json",
   "schemaVersion": "1.0",
-  "definitionVersion": "1.0.0",
+  "definitionVersion": "1.1.0",
   "vendor": "tenda",
   "vendorName": "Tenda",
   "model": "AC10",
@@ -1741,5 +1741,25 @@
       "/goform/GetUSBStatus"
     ],
     "notes": "No raw response bodies were archived for this line, so endpoints are marked app-observed rather than live-capture. Two fields carry extra weight: doubleBand is the vendor's band-merge switch and not a radio count, and wanStatus uses the sentinel '1310209' for connected. Both were learned the hard way and are recorded so a generic client does not repeat the mistakes."
+  },
+  "discovery": {
+    "preAuthProbes": [
+      {
+        "id": "probe.loginInfo",
+        "path": "/goform/getLoginInfo",
+        "method": "GET",
+        "expect": {
+          "kind": "json-object",
+          "requireFields": [
+            "isLocked",
+            "leftTimes"
+          ]
+        },
+        "meaning": "aes-line",
+        "verified": "live-roundtrip",
+        "evidence": "Documented as plaintext and readable before login in crypto.plaintextPaths; returns lock state without a session."
+      }
+    ],
+    "notes": "getLoginInfo answers plaintext JSON before login, so a client can confirm the device is an AES-family build without spending a password attempt. It does not separate this line from the other AES line; only adv_hard_ver after login does that. The picker in the app is the primary path; this probe is a cross-check."
   }
 }

@@ -14,6 +14,14 @@ parameters, login flow, which features exist — arrives at runtime inside
                                └─ verify sha256 from the index
                                     └─ cache by hash, then execute endpoints by id
 
+## 0. The first screen is a picker
+
+The app asks which router it is instead of guessing: vendor → model → firmware
+line. See `android/picker.md`. Auto-detect cannot work before login on these
+devices, because the identifying fields are behind auth and the login handshake
+differs per firmware line — a wrong guess is indistinguishable from a wrong
+password and can burn the router's attempts.
+
 ## 1. Refresh the index
 
 One request, small, cacheable. Keep the previous copy and use it when the

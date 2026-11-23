@@ -17,7 +17,9 @@
     "provenance"
   ],
   "properties": {
-    "$schema": {"type": "string"},
+    "$schema": {
+      "type": "string"
+    },
     "schemaVersion": {
       "description": "Version of this schema the document was written against. Bump only on breaking schema changes.",
       "type": "string",
@@ -53,12 +55,17 @@
     "hardwareVersions": {
       "description": "Hardware revisions this definition was confirmed on. Empty means the revision was not recorded; it does not mean 'all revisions'.",
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string"
+      }
     },
     "firmware": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["verified", "match"],
+      "required": [
+        "verified",
+        "match"
+      ],
       "properties": {
         "verified": {
           "description": "Firmware version string exactly as the device reports it.",
@@ -66,7 +73,11 @@
         },
         "match": {
           "description": "How a client decides this definition applies. 'exact' compares the whole string; 'prefix' compares a dotted-numeric prefix of the version and ignores the locale suffix; 'family' means the vendor published no usable version and the client must use identify probes instead.",
-          "enum": ["exact", "prefix", "family"]
+          "enum": [
+            "exact",
+            "prefix",
+            "family"
+          ]
         },
         "matchPrefix": {
           "description": "For match=prefix: the dotted-numeric prefix to compare, e.g. 'V15.03.06'.",
@@ -76,7 +87,9 @@
           "description": "Firmware family label shared by models that speak the same dialect, e.g. 'goahead-md5-plain'. Definitions in the same family usually need only endpoint-name and field-name corrections.",
           "type": "string"
         },
-        "notes": {"type": "string"}
+        "notes": {
+          "type": "string"
+        }
       }
     },
     "identify": {
@@ -84,48 +97,172 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "endpoint": {"type": "string", "description": "Endpoint id from this document used for the probe."},
-        "field": {"type": "string", "description": "Dotted path in the probe response holding the model name."},
-        "equals": {"type": "string", "description": "Expected value for the field."},
-        "requiresAuth": {"type": "boolean", "default": false},
-        "notes": {"type": "string"}
+        "endpoint": {
+          "type": "string",
+          "description": "Endpoint id from this document used for the probe."
+        },
+        "field": {
+          "type": "string",
+          "description": "Dotted path in the probe response holding the model name."
+        },
+        "equals": {
+          "type": "string",
+          "description": "Expected value for the field."
+        },
+        "requiresAuth": {
+          "type": "boolean",
+          "default": false
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "discovery": {
+      "description": "Optional pre-authentication probes a client can run to narrow candidates before spending a login attempt. Every probe must be readable without a session, which is why only plaintext paths appear here.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preAuthProbes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "path",
+              "method",
+              "expect",
+              "meaning",
+              "verified"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^/"
+              },
+              "method": {
+                "enum": [
+                  "GET",
+                  "POST"
+                ]
+              },
+              "expect": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "json-object",
+                      "json-array",
+                      "text",
+                      "html"
+                    ]
+                  },
+                  "status": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "requireFields": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "meaning": {
+                "type": "string"
+              },
+              "verified": {
+                "$ref": "#/$defs/verification"
+              },
+              "evidence": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
       }
     },
     "transport": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["scheme", "defaultHost"],
+      "required": [
+        "scheme",
+        "defaultHost"
+      ],
       "properties": {
-        "scheme": {"enum": ["http", "https"]},
-        "defaultHost": {"type": "string"},
-        "defaultPort": {"type": "integer", "minimum": 1, "maximum": 65535},
+        "scheme": {
+          "enum": [
+            "http",
+            "https"
+          ]
+        },
+        "defaultHost": {
+          "type": "string"
+        },
+        "defaultPort": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
         "altHosts": {
           "description": "Hostnames the vendor answers on besides the IP, e.g. a product domain.",
           "type": "array",
-          "items": {"type": "string"}
+          "items": {
+            "type": "string"
+          }
         },
         "pathPrefix": {
           "description": "Prefix prepended to every endpoint path. Empty for these devices.",
           "type": "string",
           "default": ""
         },
-        "requestTimeoutMs": {"type": "integer", "minimum": 1000},
-        "verifyTls": {"type": "boolean", "default": true},
+        "requestTimeoutMs": {
+          "type": "integer",
+          "minimum": 1000
+        },
+        "verifyTls": {
+          "type": "boolean",
+          "default": true
+        },
         "cacheBuster": {
           "description": "How the device's own UI defeats caching. Purely advisory: the devices ignore the value.",
-          "enum": ["none", "random", "timestamp"]
+          "enum": [
+            "none",
+            "random",
+            "timestamp"
+          ]
         },
-        "notes": {"type": "string"}
+        "notes": {
+          "type": "string"
+        }
       }
     },
     "session": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "login"],
+      "required": [
+        "type",
+        "login"
+      ],
       "properties": {
         "type": {
           "description": "'cookie-on-login' means the device sets a session cookie in reply to login; 'http-basic' means every request carries credentials; 'none' means the device has no auth.",
-          "enum": ["cookie-on-login", "http-basic", "none"]
+          "enum": [
+            "cookie-on-login",
+            "http-basic",
+            "none"
+          ]
         },
         "cookieName": {
           "description": "Name of the session cookie when type=cookie-on-login. Leave unset when the device picks its own name.",
@@ -139,31 +276,70 @@
         "login": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["endpoint", "method"],
+          "required": [
+            "endpoint",
+            "method"
+          ],
           "properties": {
-            "endpoint": {"type": "string"},
-            "method": {"enum": ["GET", "POST"]},
+            "endpoint": {
+              "type": "string"
+            },
+            "method": {
+              "enum": [
+                "GET",
+                "POST"
+              ]
+            },
             "body": {
               "description": "Form body template. Placeholders in the form {password} are replaced by the client using passwordEncoding.",
               "type": "object",
-              "additionalProperties": {"type": "string"}
+              "additionalProperties": {
+                "type": "string"
+              }
             },
             "passwordEncoding": {
               "description": "Transform applied to the plaintext admin password before it is placed in the body. 'md5-hex' is MD5 of the UTF-8 password, lowercase hex.",
-              "enum": ["plain", "md5-hex", "base64", "md5-hex-of-md5-hex"]
+              "enum": [
+                "plain",
+                "md5-hex",
+                "base64",
+                "md5-hex-of-md5-hex"
+              ]
             },
             "success": {
               "description": "How the client must read the reply. 'redirect-to-main' means a 302 whose Location is not the login page. 'body-number' means the body is a bare integer result code. 'cookie-set' means success is a session cookie appearing.",
               "type": "object",
               "additionalProperties": false,
-              "required": ["kind"],
+              "required": [
+                "kind"
+              ],
               "properties": {
-                "kind": {"enum": ["redirect-to-main", "body-number", "cookie-set", "http-200"]},
-                "successCodes": {"type": "array", "items": {"type": "string"}},
+                "kind": {
+                  "enum": [
+                    "redirect-to-main",
+                    "body-number",
+                    "cookie-set",
+                    "http-200"
+                  ]
+                },
+                "successCodes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "refusalCodes": {
                   "description": "Map of reply code to a stable machine reason the client can localise.",
                   "type": "object",
-                  "additionalProperties": {"enum": ["wrong-password", "wrong-username", "already-signed-in", "locked-out", "unknown"]}
+                  "additionalProperties": {
+                    "enum": [
+                      "wrong-password",
+                      "wrong-username",
+                      "already-signed-in",
+                      "locked-out",
+                      "unknown"
+                    ]
+                  }
                 },
                 "loginPageMarker": {
                   "description": "Substring that proves a reply is the login page rather than an authenticated page.",
@@ -171,16 +347,27 @@
                 }
               }
             },
-            "notes": {"type": "string"}
+            "notes": {
+              "type": "string"
+            }
           }
         },
         "logout": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "endpoint": {"type": "string"},
-            "method": {"enum": ["GET", "POST"]},
-            "notes": {"type": "string"}
+            "endpoint": {
+              "type": "string"
+            },
+            "method": {
+              "enum": [
+                "GET",
+                "POST"
+              ]
+            },
+            "notes": {
+              "type": "string"
+            }
           }
         },
         "expiry": {
@@ -188,9 +375,21 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "statusCodes": {"type": "array", "items": {"type": "integer"}},
-            "bodyMarkers": {"type": "array", "items": {"type": "string"}},
-            "redirectTo": {"type": "string"}
+            "statusCodes": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "bodyMarkers": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "redirectTo": {
+              "type": "string"
+            }
           }
         },
         "lockout": {
@@ -198,10 +397,18 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "attemptsField": {"type": "string"},
-            "lockedField": {"type": "string"},
-            "probeEndpoint": {"type": "string"},
-            "notes": {"type": "string"}
+            "attemptsField": {
+              "type": "string"
+            },
+            "lockedField": {
+              "type": "string"
+            },
+            "probeEndpoint": {
+              "type": "string"
+            },
+            "notes": {
+              "type": "string"
+            }
           }
         }
       }
@@ -210,23 +417,50 @@
       "description": "Payload protection applied on top of HTTP. Omit entirely when the device sends plain JSON or form data.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
-        "type": {"enum": ["none", "aes-128-cbc-base64"]},
+        "type": {
+          "enum": [
+            "none",
+            "aes-128-cbc-base64"
+          ]
+        },
         "iv": {
           "description": "Initialisation vector as an ASCII string, when the firmware hardcodes it.",
           "type": "string"
         },
-        "ivEncoding": {"enum": ["ascii", "hex", "base64"]},
+        "ivEncoding": {
+          "enum": [
+            "ascii",
+            "hex",
+            "base64"
+          ]
+        },
         "keySource": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind"],
+          "required": [
+            "kind"
+          ],
           "properties": {
-            "kind": {"enum": ["endpoint-field", "static", "derived"]},
-            "endpoint": {"type": "string"},
-            "field": {"type": "string"},
-            "value": {"type": "string"},
+            "kind": {
+              "enum": [
+                "endpoint-field",
+                "static",
+                "derived"
+              ]
+            },
+            "endpoint": {
+              "type": "string"
+            },
+            "field": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
             "perRequest": {
               "description": "True when the device regenerates the key on every call, so the client must fetch it immediately before each request and must not reuse a cached key.",
               "type": "boolean"
@@ -238,16 +472,24 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "request": {"type": "boolean"},
-            "response": {"type": "boolean"}
+            "request": {
+              "type": "boolean"
+            },
+            "response": {
+              "type": "boolean"
+            }
           }
         },
         "plaintextPaths": {
           "description": "Endpoint paths that are never encrypted even though the rest of the API is, e.g. the login form and a native reboot submit.",
           "type": "array",
-          "items": {"type": "string"}
+          "items": {
+            "type": "string"
+          }
         },
-        "notes": {"type": "string"}
+        "notes": {
+          "type": "string"
+        }
       }
     },
     "envelopes": {
@@ -259,62 +501,117 @@
           "description": "Field holding the numeric result code, e.g. 'errCode'.",
           "type": "string"
         },
-        "successValue": {"type": "integer"},
+        "successValue": {
+          "type": "integer"
+        },
         "errorCodes": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["code", "reason"],
+            "required": [
+              "code",
+              "reason"
+            ],
             "properties": {
-              "code": {"type": "integer"},
-              "reason": {"enum": ["rejected", "busy", "another-admin", "full", "auth", "unknown"]},
-              "notes": {"type": "string"}
+              "code": {
+                "type": "integer"
+              },
+              "reason": {
+                "enum": [
+                  "rejected",
+                  "busy",
+                  "another-admin",
+                  "full",
+                  "auth",
+                  "unknown"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              }
             }
           }
         },
         "nonJsonEndpoints": {
           "description": "Endpoints that answer with a redirect or HTML page instead of a JSON envelope. A client must not parse these as JSON.",
           "type": "array",
-          "items": {"type": "string"}
+          "items": {
+            "type": "string"
+          }
         },
-        "notes": {"type": "string"}
+        "notes": {
+          "type": "string"
+        }
       }
     },
     "endpoints": {
       "type": "array",
       "minItems": 1,
-      "items": {"$ref": "#/$defs/endpoint"}
+      "items": {
+        "$ref": "#/$defs/endpoint"
+      }
     },
     "provenance": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["verification"],
+      "required": [
+        "verification"
+      ],
       "properties": {
         "verification": {
           "description": "Weakest link: the level that applies to the least-verified endpoint in this document is recorded per endpoint; this is the overall claim.",
-          "enum": ["live-capture", "live-roundtrip", "app-observed", "ui-code", "not-captured"]
+          "enum": [
+            "live-capture",
+            "live-roundtrip",
+            "app-observed",
+            "ui-code",
+            "not-captured"
+          ]
         },
-        "capturedOn": {"type": "string", "description": "ISO date of the newest capture behind this document."},
+        "capturedOn": {
+          "type": "string",
+          "description": "ISO date of the newest capture behind this document."
+        },
         "sources": {
           "type": "array",
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["kind", "ref"],
+            "required": [
+              "kind",
+              "ref"
+            ],
             "properties": {
-              "kind": {"enum": ["device-ui-js", "device-ui-html", "live-response", "firmware-image", "client-code", "vendor-doc"]},
-              "ref": {"type": "string"},
-              "notes": {"type": "string"}
+              "kind": {
+                "enum": [
+                  "device-ui-js",
+                  "device-ui-html",
+                  "live-response",
+                  "firmware-image",
+                  "client-code",
+                  "vendor-doc"
+                ]
+              },
+              "ref": {
+                "type": "string"
+              },
+              "notes": {
+                "type": "string"
+              }
             }
           }
         },
         "unsupported": {
           "description": "Endpoints whose handler is compiled out on this model. Recorded so a client can explain the gap instead of retrying.",
           "type": "array",
-          "items": {"type": "string"}
+          "items": {
+            "type": "string"
+          }
         },
-        "notes": {"type": "string"}
+        "notes": {
+          "type": "string"
+        }
       }
     }
   },
@@ -322,7 +619,12 @@
     "endpoint": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "path", "method", "verified"],
+      "required": [
+        "id",
+        "path",
+        "method",
+        "verified"
+      ],
       "properties": {
         "id": {
           "description": "Stable dotted identifier the client and the capabilities file refer to. Never reuse or rename an id; add a new one and deprecate the old.",
@@ -334,8 +636,15 @@
           "type": "string",
           "pattern": "^/"
         },
-        "method": {"enum": ["GET", "POST"]},
-        "purpose": {"type": "string"},
+        "method": {
+          "enum": [
+            "GET",
+            "POST"
+          ]
+        },
+        "purpose": {
+          "type": "string"
+        },
         "uiPage": {
           "description": "Page of the device's own UI that issues this request, so a maintainer can re-check it by hand.",
           "type": "string"
@@ -349,27 +658,52 @@
           "additionalProperties": false,
           "properties": {
             "bodyEncoding": {
-              "enum": ["none", "form", "encrypted-form", "multipart", "json"],
+              "enum": [
+                "none",
+                "form",
+                "encrypted-form",
+                "multipart",
+                "json"
+              ],
               "default": "none"
             },
             "fields": {
               "type": "array",
-              "items": {"$ref": "#/$defs/field"}
+              "items": {
+                "$ref": "#/$defs/field"
+              }
             },
             "listEncoding": {
               "description": "How list-valued fields pack rows and columns, for endpoints that replace a whole table in one call.",
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "field": {"type": "string"},
-                "rowSeparator": {"type": "string"},
-                "columnSeparator": {"type": "string"},
-                "columns": {"type": "array", "items": {"type": "string"}},
-                "replaceWholeList": {"type": "boolean"},
-                "maxRows": {"type": "integer"}
+                "field": {
+                  "type": "string"
+                },
+                "rowSeparator": {
+                  "type": "string"
+                },
+                "columnSeparator": {
+                  "type": "string"
+                },
+                "columns": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "replaceWholeList": {
+                  "type": "boolean"
+                },
+                "maxRows": {
+                  "type": "integer"
+                }
               }
             },
-            "notes": {"type": "string"}
+            "notes": {
+              "type": "string"
+            }
           }
         },
         "response": {
@@ -377,7 +711,15 @@
           "additionalProperties": false,
           "properties": {
             "kind": {
-              "enum": ["json-object", "json-array", "json-number", "text", "html", "redirect", "binary"],
+              "enum": [
+                "json-object",
+                "json-array",
+                "json-number",
+                "text",
+                "html",
+                "redirect",
+                "binary"
+              ],
               "default": "json-object"
             },
             "arrayLayout": {
@@ -386,14 +728,18 @@
             },
             "fields": {
               "type": "array",
-              "items": {"$ref": "#/$defs/field"}
+              "items": {
+                "$ref": "#/$defs/field"
+              }
             },
             "shapeUnverified": {
               "description": "True when the endpoint is known to exist but no response was captured. A client may call it but must treat every field as absent.",
               "type": "boolean",
               "default": false
             },
-            "notes": {"type": "string"}
+            "notes": {
+              "type": "string"
+            }
           }
         },
         "writes": {
@@ -403,7 +749,13 @@
         },
         "risk": {
           "description": "safe = no state change; low = cosmetic or reversible, no client disconnects; medium = disconnects clients or reconfigures one interface; high = drops the WAN or changes working mode; destructive = wipes configuration, flashes firmware, or reboots.",
-          "enum": ["safe", "low", "medium", "high", "destructive"],
+          "enum": [
+            "safe",
+            "low",
+            "medium",
+            "high",
+            "destructive"
+          ],
           "default": "safe"
         },
         "requiresConfirmation": {
@@ -411,55 +763,94 @@
           "type": "boolean",
           "default": false
         },
-        "verified": {"$ref": "#/$defs/verification"},
+        "verified": {
+          "$ref": "#/$defs/verification"
+        },
         "evidence": {
           "description": "Where the field list and values came from, short enough to check by hand.",
           "type": "string"
         },
-        "notes": {"type": "string"}
+        "notes": {
+          "type": "string"
+        }
       }
     },
     "verification": {
       "description": "live-capture = a raw reply was recorded; live-roundtrip = written and read back unchanged; app-observed = exercised by the Android app against real hardware, raw reply not retained; ui-code = read out of the device's own JavaScript or markup; not-captured = the code path exists but was never exercised; absent = the handler is not compiled into this firmware.",
-      "enum": ["live-capture", "live-roundtrip", "app-observed", "ui-code", "not-captured", "absent"]
+      "enum": [
+        "live-capture",
+        "live-roundtrip",
+        "app-observed",
+        "ui-code",
+        "not-captured",
+        "absent"
+      ]
     },
     "field": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "properties": {
         "name": {
           "description": "Wire name exactly as sent or received, including suffixes like '_5g'. Use dotted paths for nested objects.",
           "type": "string"
         },
-        "in": {"enum": ["query", "body"]},
+        "in": {
+          "enum": [
+            "query",
+            "body"
+          ]
+        },
         "type": {
-          "enum": ["string", "integer", "number", "boolean-ish", "string[]", "object", "object[]"],
+          "enum": [
+            "string",
+            "integer",
+            "number",
+            "boolean-ish",
+            "string[]",
+            "object",
+            "object[]"
+          ],
           "default": "string"
         },
-        "required": {"type": "boolean"},
+        "required": {
+          "type": "boolean"
+        },
         "values": {
           "description": "The complete accepted value set when the field is an enum. Omit rather than guess.",
           "type": "array",
-          "items": {"type": "string"}
+          "items": {
+            "type": "string"
+          }
         },
         "valueLabels": {
           "description": "Wire value to the label the vendor's UI shows, when the two differ.",
           "type": "object",
-          "additionalProperties": {"type": "string"}
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "unit": {
           "description": "Unit and scaling the wire value uses, e.g. 'Mbps x128 -> KB/s'.",
           "type": "string"
         },
-        "readOnly": {"type": "boolean", "default": false},
+        "readOnly": {
+          "type": "boolean",
+          "default": false
+        },
         "secret": {
           "description": "True when the value is a credential or key that must be redacted before display or logging.",
           "type": "boolean",
           "default": false
         },
-        "maxLength": {"type": "integer"},
-        "notes": {"type": "string"}
+        "maxLength": {
+          "type": "integer"
+        },
+        "notes": {
+          "type": "string"
+        }
       }
     }
   }

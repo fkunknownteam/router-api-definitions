@@ -1,7 +1,7 @@
 {
   "$schema": "../../../../schema/api-definition.schema.json",
   "schemaVersion": "1.0",
-  "definitionVersion": "1.0.0",
+  "definitionVersion": "1.1.0",
   "vendor": "tenda",
   "vendorName": "Tenda",
   "model": "AC10",
@@ -442,5 +442,25 @@
       }
     ],
     "notes": "DELIBERATELY INCOMPLETE. Only endpoints actually exercised on this firmware line are listed. The wider AC10 map in the v1.0-fw15.03.06.50 document (WiFi, clients, NAT, VPN, system) very likely exists here too, because the page names and goform handler names are shared across AC10 builds, but it was NOT re-verified on V03.03.16 and is therefore not claimed. A client must probe with a read endpoint before offering a write, and must treat a missing feature as unknown rather than absent."
+  },
+  "discovery": {
+    "preAuthProbes": [
+      {
+        "id": "probe.loginInfo",
+        "path": "/goform/getLoginInfo",
+        "method": "GET",
+        "expect": {
+          "kind": "json-object",
+          "requireFields": [
+            "isLocked",
+            "leftTimes"
+          ]
+        },
+        "meaning": "aes-line",
+        "verified": "live-roundtrip",
+        "evidence": "Documented as plaintext and readable before login in crypto.plaintextPaths; returns lock state without a session."
+      }
+    ],
+    "notes": "getLoginInfo answers plaintext JSON before login, so a client can confirm the device is an AES-family build without spending a password attempt. It does not separate this line from the other AES line; only adv_hard_ver after login does that. The picker in the app is the primary path; this probe is a cross-check."
   }
 }

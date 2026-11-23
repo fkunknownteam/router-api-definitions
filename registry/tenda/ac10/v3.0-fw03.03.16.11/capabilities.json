@@ -1,7 +1,7 @@
 {
   "$schema": "../../../../schema/capabilities.schema.json",
   "schemaVersion": "1.0",
-  "definitionVersion": "1.0.0",
+  "definitionVersion": "1.1.0",
   "vendor": "tenda",
   "model": "AC10",
   "variant": "v3.0-fw03.03.16.11",

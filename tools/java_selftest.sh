@@ -16,6 +16,9 @@ echo "compiling android engine"
 javac -Xlint:all -Werror -d "$OUT" \
   $(find "$ROOT/android/engine/java" "$ROOT/android/engine/test" -name '*.java')
 
+echo "picker flow"
+java -cp "$OUT" PickerSelftest "$ROOT/registry/index.json" "$ROOT"
+
 fail=0
 for api in "$ROOT"/registry/*/*/*/api.json; do
   dir="$(dirname "$api")"

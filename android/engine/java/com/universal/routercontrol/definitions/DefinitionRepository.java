@@ -42,6 +42,7 @@ public final class DefinitionRepository {
         public final String capsSha;
         public final String definitionVersion;
         public final String matchPrefix;
+        public final String label;
         public final List<String> hardwareVersions = new ArrayList<>();
 
         Variant(Map<String, Object> raw) {
@@ -51,6 +52,8 @@ public final class DefinitionRepository {
             this.capsUrl = Json.str(raw, "capabilitiesUrl");
             this.definitionVersion = Json.str(raw, "definitionVersion");
             this.matchPrefix = Json.str(raw, "matchPrefix");
+            String l = Json.str(raw, "label");
+            this.label = l != null ? l : (path == null ? "unknown" : path);
             Map<String, Object> shas = Json.obj(raw, "sha256");
             this.apiSha = Json.str(shas, "api");
             this.capsSha = Json.str(shas, "capabilities");
@@ -67,12 +70,43 @@ public final class DefinitionRepository {
 
     public List<Variant> fetchIndex() throws IOException {
         String text = httpGet(registryBase + "/index.json");
+        if (cacheDir != null) {
+            try {
+                write(cacheDir + "/index.json", text.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException ignored) {
+                // a cache that cannot be written must not fail the fetch
+            }
+        }
         Map<String, Object> idx = Json.parseObject(text);
         List<Variant> out = new ArrayList<>();
         for (Map<String, Object> d : Json.objArr(idx, "definitions")) {
             out.add(new Variant(d));
         }
         return out;
+    }
+
+    /** The whole index document, for the picker. */
+    public Map<String, Object> fetchIndexDocument() throws IOException {
+        String text = httpGet(registryBase + "/index.json");
+        if (cacheDir != null) {
+            try {
+                write(cacheDir + "/index.json", text.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException ignored) {
+                // see above
+            }
+        }
+        return Json.parseObject(text);
+    }
+
+    /**
+     * The last successfully fetched index, or null when there is none.
+     * Static so the picker can be built before a repository exists.
+     */
+    public static String readCachedIndex(String cacheDir) throws IOException {
+        if (cacheDir == null) return null;
+        java.io.File f = new java.io.File(cacheDir + "/index.json");
+        if (!f.isFile()) return null;
+        return new String(java.nio.file.Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
     }
 
     /**

@@ -29,6 +29,20 @@ would notice, not just what was edited.
 
 ---
 
+## tenda/ac10 v3.0-fw03.03.16.11 — 1.1.0 — 2026-11-23
+
+### Added
+- `discovery.preAuthProbes`: `/goform/getLoginInfo` answers plaintext JSON before
+  login, so an app can confirm the device is an AES-family build without spending
+  a password attempt. It does not distinguish this firmware line from the other
+  AES line; only `adv_hard_ver` after login does that.
+
+### Changed
+- The picker (`android/picker.md`) is now the primary way an app selects a
+  variant. This probe is a cross-check, not a replacement.
+
+---
+
 ## tenda/ac10 v3.0-fw03.03.16.11 — 1.0.0 — 2026-11-23
 
 ### Added
@@ -46,6 +60,19 @@ would notice, not just what was edited.
   `provenance.notes`.
 - Capabilities beyond status and remote administration are `unknown`, not absent:
   an unverified feature must not disappear from the app.
+
+---
+
+## tenda/ac10 v4.0-fw16.03 — 1.1.0 — 2026-11-23
+
+### Added
+- `discovery.preAuthProbes`: `/goform/getLoginInfo` answers plaintext JSON before
+  login, so an app can confirm the device is an AES-family build without spending
+  a password attempt.
+
+### Changed
+- The picker (`android/picker.md`) is now the primary way an app selects a
+  variant. This probe is a cross-check, not a replacement.
 
 ---
 

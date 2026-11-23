@@ -11,6 +11,11 @@
     "schemaVersion": {"type": "string", "const": "1.0"},
     "generatedBy": {"type": "string"},
     "rawBase": {"type": "string"},
+    "vendorNames": {
+      "description": "Display names for the picker, keyed by vendor slug.",
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
     "vendors": {"type": "object", "additionalProperties": {"$ref": "#/$defs/modelList"}},
     "definitions": {"type": "array", "items": {"$ref": "#/$defs/definition"}}
   },
@@ -24,6 +29,7 @@
         "properties": {
           "model": {"type": "string"},
           "slug": {"type": "string"},
+          "variantCount": {"type": "integer"},
           "variants": {"type": "array", "items": {"$ref": "#/$defs/definition"}}
         }
       }
@@ -34,6 +40,10 @@
       "required": ["path", "apiUrl", "capabilitiesUrl", "definitionVersion", "schemaVersion", "sha256"],
       "properties": {
         "path": {"type": "string"},
+        "label": {
+          "description": "Human-readable line for the firmware picker, e.g. 'Hardware V3.0 — firmware V03.03.16.11_multi'.",
+          "type": "string"
+        },
         "apiUrl": {"type": "string"},
         "capabilitiesUrl": {"type": "string"},
         "definitionVersion": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},

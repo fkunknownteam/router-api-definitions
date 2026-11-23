@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/capabilities.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tplink",
+  "model": "TL-WR940N",
+  "variant": "v6-fw-evidence",
+  "features": {
+    "status": "full",
+    "firmware.upgrade": "read-only",
+    "firewall": "full",
+    "logs": "full",
+    "time": "full",
+    "lan": "full",
+    "dhcp.reservation": "full",
+    "led": "full",
+    "wan": "full",
+    "wifi.basic": "full",
+    "backup": "read-only"
+  }
+}

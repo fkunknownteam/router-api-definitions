@@ -1,0 +1,191 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/api-definition.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tplink",
+  "vendorName": "TP-Link",
+  "model": "ARCHER-C24",
+  "modelSlug": "archer-c24",
+  "variant": "v1-fw-evidence",
+  "hardwareVersions": [
+    "V1"
+  ],
+  "firmware": {
+    "match": "family",
+    "verified": "V1",
+    "notes": "Firmware build dates observed in the archive: US=201022"
+  },
+  "transport": {
+    "scheme": "http",
+    "defaultHost": "192.168.0.1",
+    "defaultPort": 80,
+    "altHosts": [
+      "tplinkwifi.net",
+      "tplinkmodem.net"
+    ],
+    "pathPrefix": "",
+    "requestTimeoutMs": 12000,
+    "verifyTls": true,
+    "cacheBuster": "none",
+    "notes": "Paths were read out of the firmware image. Which hostname the device answers on was not captured, so the client should try the gateway address first."
+  },
+  "session": {
+    "type": "cookie-on-login",
+    "maxConcurrentSessions": 1,
+    "login": {
+      "endpoint": "/",
+      "method": "POST",
+      "verified": "not-captured",
+      "notes": "The login form itself was not captured for this build, so no password encoding is claimed. Until a capture exists the client must refuse to guess the handshake.",
+      "success": {
+        "kind": "cookie-set"
+      }
+    }
+  },
+  "identify": {
+    "endpoint": "code-1-asyn-0",
+    "field": "model",
+    "equals": "ARCHER-C24",
+    "requiresAuth": true,
+    "notes": "The model string is served by the firmware UI; reading it needs a session, so identification happens after login."
+  },
+  "endpoints": [
+    {
+      "id": "code-1-asyn-0",
+      "path": "/?code=1&asyn=0",
+      "method": "POST",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "destructive",
+      "writes": true,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions US",
+      "requiresConfirmation": true,
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "code-2-asyn-0",
+      "path": "/?code=2&asyn=0",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions US",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "code-2-asyn-1-loginCheck",
+      "path": "/?code=2&asyn=1&loginCheck",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions US",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "code-2-asyn-1-body-0",
+      "path": "/?code=2&asyn=1` (body `0",
+      "method": "GET",
+      "purpose": "US endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions 1, 0, 0`)",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "code-7-asyn-1",
+      "path": "/?code=7&asyn=1",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions US",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "code-7-asyn-0-id-encrypted",
+      "path": "/?code=7&asyn=0&id=<encrypted>",
+      "method": "POST",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "destructive",
+      "writes": true,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions US",
+      "requiresConfirmation": true,
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "config.device.json",
+      "path": "/config/device.json",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions US",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "config.models.json",
+      "path": "/config/models.json",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions US",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "config.modules.json",
+      "path": "/config/modules.json",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions US",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "config.navigator.json",
+      "path": "/config/navigator.json",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions US",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    }
+  ],
+  "provenance": {
+    "verification": "ui-code",
+    "capturedOn": "2026-11-23",
+    "sources": [
+      {
+        "kind": "firmware-image",
+        "ref": "routerctl extraction of ARCHER-C24 firmware; 10 UI paths read from api_map.md"
+      }
+    ],
+    "notes": "Paths and form fields were read out of the firmware image. No live device was reachable, so no reply body was ever captured and nothing here is live-verified.",
+    "unsupported": [
+      "Response bodies: no live device was available, so no reply was captured",
+      "Login handshake: form and encoding not captured for this build"
+    ]
+  }
+}

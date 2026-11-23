@@ -306,6 +306,10 @@
                 "md5-hex-of-md5-hex"
               ]
             },
+            "verified": {
+              "description": "How well this handshake is known. 'not-captured' means the form was never observed on hardware, so a client must refuse to attempt login rather than guess an encoding. Omitting this key means the handshake was captured.",
+              "$ref": "#/$defs/verification"
+            },
             "success": {
               "description": "How the client must read the reply. 'redirect-to-main' means a 302 whose Location is not the login page. 'body-number' means the body is a bare integer result code. 'cookie-set' means success is a session cookie appearing.",
               "type": "object",

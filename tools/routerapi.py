@@ -131,9 +131,18 @@ class DefinitionIndex:
         return out
 
     def select(self, firmware, model=None, hardware=None):
-        """Longest matching firmware prefix wins, so V15.03.06.5x beats V15.03."""
+        """Longest matching firmware prefix wins, so V15.03.06.5x beats V15.03.
+
+        A definition with match=family declares that the vendor published no
+        usable version string, so it matches any firmware for that model and is
+        only ever chosen when nothing more specific fits.
+        """
         best, best_len = None, -1
         for d in self.candidates(model, hardware):
+            if d.get("match") == "family":
+                if best is None:
+                    best, best_len = d, 0
+                continue
             prefix = d.get("matchPrefix")
             ok = firmware.startswith(prefix) if prefix else firmware == d.get("firmware")
             if ok and len(prefix or "") > best_len:
@@ -319,6 +328,13 @@ class RouterClient:
         spec = sess["login"]
         if sess["type"] == "none":
             return True
+        # A handshake that was never captured must not be attempted: guessing the
+        # encoding spends one of the device's password attempts and cannot
+        # succeed by luck. Refusing is the only honest behaviour.
+        if spec.get("verified") == "not-captured":
+            raise DefinitionError(
+                f"login handshake for {self.d.model} {self.d.variant} was never captured; "
+                "the definition cannot sign in until a capture exists")
         body = dict(spec.get("body") or {})
         for k, v in list(body.items()):
             if isinstance(v, str) and "{password}" in v:

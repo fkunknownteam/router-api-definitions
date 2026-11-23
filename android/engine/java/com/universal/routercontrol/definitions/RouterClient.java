@@ -168,6 +168,14 @@ public final class RouterClient {
         Map<String, Object> spec = Json.obj(sess, "login");
         if (spec == null) throw new DefinitionException("session.login is missing");
         if ("none".equals(Json.str(sess, "type"))) return;
+        // A handshake that was never captured must not be attempted: guessing the
+        // encoding spends one of the device's password attempts and cannot
+        // succeed by luck. Refusing is the only honest behaviour.
+        if ("not-captured".equals(Json.str(spec, "verified"))) {
+            throw new DefinitionException(
+                    "login handshake for " + d.model() + " " + d.variant()
+                            + " was never captured");
+        }
 
         Map<String, Object> bodySpec = Json.obj(spec, "body");
         Map<String, String> body = new LinkedHashMap<>();

@@ -1,4 +1,5 @@
 import com.universal.routercontrol.definitions.Definition;
+import com.universal.routercontrol.definitions.Json;
 import com.universal.routercontrol.definitions.RouterClient;
 
 import java.nio.charset.StandardCharsets;
@@ -38,6 +39,22 @@ public final class JavaSelftest {
         Definition d = Definition.of(api, caps);
         System.out.println("  " + d.vendor() + "/" + d.model() + "/" + d.variant()
                 + " definition " + d.definitionVersion());
+
+        // A document whose login handshake was never captured cannot be driven.
+        // Proving it refuses is the whole test for those.
+        Map<String, Object> sessSpec = Json.obj(d.session(), "login");
+        if (sessSpec != null && "not-captured".equals(Json.str(sessSpec, "verified"))) {
+            RouterClient c0 = new RouterClient(d, "127.0.0.1", port, false);
+            c0.setCredentials("admin", "admin");
+            try {
+                c0.login();
+                fail("uncaptured login handshake was attempted");
+            } catch (RouterClient.DefinitionException expected) {
+                System.out.println("  ^ refused an uncaptured login handshake ("
+                        + d.ids().size() + " endpoints documented)");
+            }
+            return;
+        }
 
         // wrong password must be refused
         RouterClient bad = new RouterClient(d, "127.0.0.1", port, false);

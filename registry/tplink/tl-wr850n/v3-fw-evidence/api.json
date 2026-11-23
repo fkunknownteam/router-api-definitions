@@ -1,0 +1,155 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/api-definition.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tplink",
+  "vendorName": "TP-Link",
+  "model": "TL-WR850N",
+  "modelSlug": "tl-wr850n",
+  "variant": "v3-fw-evidence",
+  "hardwareVersions": [
+    "V3"
+  ],
+  "firmware": {
+    "match": "family",
+    "verified": "V3",
+    "notes": "Firmware build dates observed in the archive: TH=20260422, UNKNOWN=20230628, US=20230227"
+  },
+  "transport": {
+    "scheme": "http",
+    "defaultHost": "192.168.0.1",
+    "defaultPort": 80,
+    "altHosts": [
+      "tplinkwifi.net",
+      "tplinkmodem.net"
+    ],
+    "pathPrefix": "",
+    "requestTimeoutMs": 12000,
+    "verifyTls": true,
+    "cacheBuster": "none",
+    "notes": "Paths were read out of the firmware image. Which hostname the device answers on was not captured, so the client should try the gateway address first."
+  },
+  "session": {
+    "type": "cookie-on-login",
+    "maxConcurrentSessions": 1,
+    "login": {
+      "endpoint": "/",
+      "method": "POST",
+      "verified": "not-captured",
+      "notes": "The login form itself was not captured for this build, so no password encoding is claimed. Until a capture exists the client must refuse to guess the handshake.",
+      "success": {
+        "kind": "cookie-set"
+      }
+    }
+  },
+  "identify": {
+    "endpoint": "cgi.certup",
+    "field": "model",
+    "equals": "TL-WR850N",
+    "requiresAuth": true,
+    "notes": "The model string is served by the firmware UI; reading it needs a session, so identification happens after login."
+  },
+  "endpoints": [
+    {
+      "id": "cgi.certup",
+      "path": "/cgi/certup",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions UNKNOWN, US; 2 form field(s) present",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "cgi.conf.bin",
+      "path": "/cgi/conf.bin",
+      "method": "GET",
+      "purpose": "backup endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "backup",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions UNKNOWN, US; 1 form field(s) present",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "cgi.confup",
+      "path": "/cgi/confup",
+      "method": "POST",
+      "purpose": "backup endpoint observed in the firmware UI",
+      "risk": "destructive",
+      "writes": true,
+      "feature": "backup",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions UNKNOWN, US; 1 form field(s) present",
+      "requiresConfirmation": true,
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "cgi.softup",
+      "path": "/cgi/softup",
+      "method": "POST",
+      "purpose": "firmware endpoint observed in the firmware UI",
+      "risk": "destructive",
+      "writes": true,
+      "feature": "firmware.upgrade",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions UNKNOWN, US; 1 form field(s) present",
+      "requiresConfirmation": true,
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "cgi.usb3gup",
+      "path": "/cgi/usb3gup",
+      "method": "GET",
+      "purpose": "usb endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "usb.storage",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions UNKNOWN; 1 form field(s) present",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "frame.menu.cgi",
+      "path": "/frame/menu.cgi",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions TH, UNKNOWN, US",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "main.status.htm",
+      "path": "/main/status.htm",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions TH, UNKNOWN, US",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    }
+  ],
+  "provenance": {
+    "verification": "ui-code",
+    "capturedOn": "2026-11-23",
+    "sources": [
+      {
+        "kind": "firmware-image",
+        "ref": "routerctl extraction of TL-WR850N firmware; 7 UI paths read from api_map.md"
+      }
+    ],
+    "notes": "Paths and form fields were read out of the firmware image. No live device was reachable, so no reply body was ever captured and nothing here is live-verified.",
+    "unsupported": [
+      "Response bodies: no live device was available, so no reply was captured",
+      "Login handshake: form and encoding not captured for this build"
+    ]
+  }
+}

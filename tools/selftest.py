@@ -39,8 +39,26 @@ def check(cond, msg):
 def run_definition(rel_dir):
     api_path = os.path.join(ROOT, rel_dir, "api.json")
     d = Definition.load(api_path)
-    srv, _, port = mockrouter.serve(d)
     tag = f"{d.vendor}/{d.model}/{d.variant}"
+
+    # A definition whose login handshake was never captured cannot be driven at
+    # all. Proving that it refuses is the whole test for those documents.
+    login_spec = d.api["session"]["login"]
+    if login_spec.get("verified") == "not-captured":
+        c = RouterClient(d, host="127.0.0.1", port=1, password="***", use_tls=False)
+        try:
+            c.login()
+        except DefinitionError:
+            print(f"  ok   {tag}: refuses to guess an uncaptured login handshake "
+                  f"({len(d.api['endpoints'])} endpoints documented)")
+            return
+        except Exception as e:  # noqa: BLE001
+            check(False, f"{tag}: uncaptured login raised {type(e).__name__} instead of DefinitionError")
+            return
+        check(False, f"{tag}: uncaptured login handshake was attempted")
+        return
+
+    srv, _, port = mockrouter.serve(d)
     try:
         c = RouterClient(d, host="127.0.0.1", port=port, password="wrong", use_tls=False)
         try:

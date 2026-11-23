@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/capabilities.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tplink",
+  "model": "TL-WR844N",
+  "variant": "v1-fw-evidence",
+  "features": {
+    "status": "read-only"
+  }
+}

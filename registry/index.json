@@ -4,7 +4,8 @@
   "generatedBy": "tools/build_index.py",
   "rawBase": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry",
   "vendorNames": {
-    "tenda": "Tenda"
+    "tenda": "Tenda",
+    "tplink": "TP-Link"
   },
   "vendors": {
     "tenda": [
@@ -22,6 +23,7 @@
             "schemaVersion": "1.0",
             "firmware": "V15.03.06.50_multi",
             "matchPrefix": "V15.03.06",
+            "match": "prefix",
             "hardwareVersions": [
               "V1.0"
             ],
@@ -40,6 +42,7 @@
             "schemaVersion": "1.0",
             "firmware": "V03.03.16.11_multi",
             "matchPrefix": "V03.03.16",
+            "match": "prefix",
             "hardwareVersions": [
               "V3.0"
             ],
@@ -58,6 +61,7 @@
             "schemaVersion": "1.0",
             "firmware": "V16.03",
             "matchPrefix": "V16.03",
+            "match": "prefix",
             "hardwareVersions": [
               "V4.0"
             ],
@@ -65,6 +69,243 @@
             "sha256": {
               "api": "5ba30a37de27bb73b049aaeae3832cec179d943cdb3d0bd15653132619d24013",
               "capabilities": "a995d2f10b757775df350e32a9955bb9bd53ad59cd1db936e46cb2d5ea44ccf4"
+            }
+          }
+        ]
+      }
+    ],
+    "tplink": [
+      {
+        "model": "ARCHER-C24",
+        "slug": "archer-c24",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/archer-c24/v1-fw-evidence",
+            "label": "Hardware V1 — firmware V1",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/archer-c24/v1-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/archer-c24/v1-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "V1",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V1"
+            ],
+            "endpointCount": 10,
+            "sha256": {
+              "api": "0f7d0f99fe79675600a0d4af99aaa5808ab2fd32c2608ca34cd5412478c572fd",
+              "capabilities": "9e93b7beb655e10be283cf8b3f66a4a345bc84cb14398cbb25317b0b49ce2dc0"
+            }
+          }
+        ]
+      },
+      {
+        "model": "TL-WR820N",
+        "slug": "tl-wr820n",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/tl-wr820n/v2-fw-evidence",
+            "label": "Hardware V2 — firmware 20260611",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr820n/v2-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr820n/v2-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "20260611",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V2"
+            ],
+            "endpointCount": 2,
+            "sha256": {
+              "api": "823e34b70d9bb6e81bd5e1277dd96bdf36307083d9fd1bc8768812730864dd5f",
+              "capabilities": "21f1bb2a88edc876d58658d407d4e5b9e93ceff51df432678c119395623ca4c3"
+            }
+          }
+        ]
+      },
+      {
+        "model": "TL-WR840N",
+        "slug": "tl-wr840n",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/tl-wr840n/v6-fw-evidence",
+            "label": "Hardware V6 — firmware 20260304",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr840n/v6-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr840n/v6-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "20260304",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V6"
+            ],
+            "endpointCount": 76,
+            "sha256": {
+              "api": "a5794d1ad8409636cc8fe4453fd7dc5871cc3635b9fb9210719e29e9bd6ffd0a",
+              "capabilities": "16b08226411cf76692b54b348307b3aa6e3f00f339a1c4e52a8917057083cbbc"
+            }
+          }
+        ]
+      },
+      {
+        "model": "TL-WR841N",
+        "slug": "tl-wr841n",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/tl-wr841n/v14-fw-evidence",
+            "label": "Hardware V14 — firmware 20260821",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr841n/v14-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr841n/v14-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "20260821",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V14"
+            ],
+            "endpointCount": 94,
+            "sha256": {
+              "api": "d6c7c85baa313ed261978554db980d215ca92f9607f6019ea6446abe46fc9ea4",
+              "capabilities": "799d1ce01f00b013365112a71be69929f2533ee33af910c475781f7aeb6faea0"
+            }
+          }
+        ]
+      },
+      {
+        "model": "TL-WR844N",
+        "slug": "tl-wr844n",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/tl-wr844n/v1-fw-evidence",
+            "label": "Hardware V1 — firmware 20260611",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr844n/v1-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr844n/v1-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "20260611",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V1"
+            ],
+            "endpointCount": 2,
+            "sha256": {
+              "api": "736d28123c60b7c27e932e27fa8a9a1c1b83a9edb4ef47db253522450dd6640b",
+              "capabilities": "9cc70c3b753698fc658b793ee16a8e8754f148c78a0d9547f724d073d846a44c"
+            }
+          }
+        ]
+      },
+      {
+        "model": "TL-WR845N",
+        "slug": "tl-wr845n",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/tl-wr845n/v3-fw-evidence",
+            "label": "Hardware V3/V4 — firmware 20170609",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr845n/v3-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr845n/v3-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "20170609",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V3",
+              "V4"
+            ],
+            "endpointCount": 6,
+            "sha256": {
+              "api": "8b9aa1e6da555b2922e89f15fc9e3eb0806c5631b85eee85960e0d4b98fb1250",
+              "capabilities": "636286d107196a21cf6cbc6037617e90160baa40f223a604c139869c719414ca"
+            }
+          }
+        ]
+      },
+      {
+        "model": "TL-WR846N",
+        "slug": "tl-wr846n",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/tl-wr846n/v1-fw-evidence",
+            "label": "Hardware V1 — firmware 20250731",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr846n/v1-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr846n/v1-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "20250731",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V1"
+            ],
+            "endpointCount": 2,
+            "sha256": {
+              "api": "2a62dd69a6d9183ee516ec2028ffc198917d24331bfb8b4f36b5c16691ea4764",
+              "capabilities": "be0fed8a3c3f6918cc981536818a48e5a94b2c9eca5516a1d8eec6eb445c89f2"
+            }
+          }
+        ]
+      },
+      {
+        "model": "TL-WR850N",
+        "slug": "tl-wr850n",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/tl-wr850n/v3-fw-evidence",
+            "label": "Hardware V3 — firmware V3",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr850n/v3-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr850n/v3-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "V3",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V3"
+            ],
+            "endpointCount": 7,
+            "sha256": {
+              "api": "c3c0d656f56ad9ab730f9757204aaab7ddc259266d0efd8fa03cf821281d81aa",
+              "capabilities": "6db0ce78cb63e4aaaa2f5529b23921f594ba4c79a98b2f1fe9fd5b7a85fc9bae"
+            }
+          }
+        ]
+      },
+      {
+        "model": "TL-WR940N",
+        "slug": "tl-wr940n",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/tl-wr940n/v6-fw-evidence",
+            "label": "Hardware V6 — firmware 20260528",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr940n/v6-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr940n/v6-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "20260528",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V6"
+            ],
+            "endpointCount": 101,
+            "sha256": {
+              "api": "40a6e2331f291051ac2eddc9b6775ea7735d36699eb47a854238d5aa7359aa91",
+              "capabilities": "19bd2372ca4d45f0ba4c6391bf28f5969477950a5ad73e30ee77d44f9a65515c"
             }
           }
         ]
@@ -81,6 +322,7 @@
       "schemaVersion": "1.0",
       "firmware": "V15.03.06.50_multi",
       "matchPrefix": "V15.03.06",
+      "match": "prefix",
       "hardwareVersions": [
         "V1.0"
       ],
@@ -99,6 +341,7 @@
       "schemaVersion": "1.0",
       "firmware": "V03.03.16.11_multi",
       "matchPrefix": "V03.03.16",
+      "match": "prefix",
       "hardwareVersions": [
         "V3.0"
       ],
@@ -117,6 +360,7 @@
       "schemaVersion": "1.0",
       "firmware": "V16.03",
       "matchPrefix": "V16.03",
+      "match": "prefix",
       "hardwareVersions": [
         "V4.0"
       ],
@@ -124,6 +368,178 @@
       "sha256": {
         "api": "5ba30a37de27bb73b049aaeae3832cec179d943cdb3d0bd15653132619d24013",
         "capabilities": "a995d2f10b757775df350e32a9955bb9bd53ad59cd1db936e46cb2d5ea44ccf4"
+      }
+    },
+    {
+      "path": "registry/tplink/archer-c24/v1-fw-evidence",
+      "label": "Hardware V1 — firmware V1",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/archer-c24/v1-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/archer-c24/v1-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "V1",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V1"
+      ],
+      "endpointCount": 10,
+      "sha256": {
+        "api": "0f7d0f99fe79675600a0d4af99aaa5808ab2fd32c2608ca34cd5412478c572fd",
+        "capabilities": "9e93b7beb655e10be283cf8b3f66a4a345bc84cb14398cbb25317b0b49ce2dc0"
+      }
+    },
+    {
+      "path": "registry/tplink/tl-wr820n/v2-fw-evidence",
+      "label": "Hardware V2 — firmware 20260611",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr820n/v2-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr820n/v2-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "20260611",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V2"
+      ],
+      "endpointCount": 2,
+      "sha256": {
+        "api": "823e34b70d9bb6e81bd5e1277dd96bdf36307083d9fd1bc8768812730864dd5f",
+        "capabilities": "21f1bb2a88edc876d58658d407d4e5b9e93ceff51df432678c119395623ca4c3"
+      }
+    },
+    {
+      "path": "registry/tplink/tl-wr840n/v6-fw-evidence",
+      "label": "Hardware V6 — firmware 20260304",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr840n/v6-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr840n/v6-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "20260304",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V6"
+      ],
+      "endpointCount": 76,
+      "sha256": {
+        "api": "a5794d1ad8409636cc8fe4453fd7dc5871cc3635b9fb9210719e29e9bd6ffd0a",
+        "capabilities": "16b08226411cf76692b54b348307b3aa6e3f00f339a1c4e52a8917057083cbbc"
+      }
+    },
+    {
+      "path": "registry/tplink/tl-wr841n/v14-fw-evidence",
+      "label": "Hardware V14 — firmware 20260821",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr841n/v14-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr841n/v14-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "20260821",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V14"
+      ],
+      "endpointCount": 94,
+      "sha256": {
+        "api": "d6c7c85baa313ed261978554db980d215ca92f9607f6019ea6446abe46fc9ea4",
+        "capabilities": "799d1ce01f00b013365112a71be69929f2533ee33af910c475781f7aeb6faea0"
+      }
+    },
+    {
+      "path": "registry/tplink/tl-wr844n/v1-fw-evidence",
+      "label": "Hardware V1 — firmware 20260611",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr844n/v1-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr844n/v1-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "20260611",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V1"
+      ],
+      "endpointCount": 2,
+      "sha256": {
+        "api": "736d28123c60b7c27e932e27fa8a9a1c1b83a9edb4ef47db253522450dd6640b",
+        "capabilities": "9cc70c3b753698fc658b793ee16a8e8754f148c78a0d9547f724d073d846a44c"
+      }
+    },
+    {
+      "path": "registry/tplink/tl-wr845n/v3-fw-evidence",
+      "label": "Hardware V3/V4 — firmware 20170609",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr845n/v3-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr845n/v3-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "20170609",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V3",
+        "V4"
+      ],
+      "endpointCount": 6,
+      "sha256": {
+        "api": "8b9aa1e6da555b2922e89f15fc9e3eb0806c5631b85eee85960e0d4b98fb1250",
+        "capabilities": "636286d107196a21cf6cbc6037617e90160baa40f223a604c139869c719414ca"
+      }
+    },
+    {
+      "path": "registry/tplink/tl-wr846n/v1-fw-evidence",
+      "label": "Hardware V1 — firmware 20250731",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr846n/v1-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr846n/v1-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "20250731",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V1"
+      ],
+      "endpointCount": 2,
+      "sha256": {
+        "api": "2a62dd69a6d9183ee516ec2028ffc198917d24331bfb8b4f36b5c16691ea4764",
+        "capabilities": "be0fed8a3c3f6918cc981536818a48e5a94b2c9eca5516a1d8eec6eb445c89f2"
+      }
+    },
+    {
+      "path": "registry/tplink/tl-wr850n/v3-fw-evidence",
+      "label": "Hardware V3 — firmware V3",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr850n/v3-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr850n/v3-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "V3",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V3"
+      ],
+      "endpointCount": 7,
+      "sha256": {
+        "api": "c3c0d656f56ad9ab730f9757204aaab7ddc259266d0efd8fa03cf821281d81aa",
+        "capabilities": "6db0ce78cb63e4aaaa2f5529b23921f594ba4c79a98b2f1fe9fd5b7a85fc9bae"
+      }
+    },
+    {
+      "path": "registry/tplink/tl-wr940n/v6-fw-evidence",
+      "label": "Hardware V6 — firmware 20260528",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr940n/v6-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr940n/v6-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "20260528",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V6"
+      ],
+      "endpointCount": 101,
+      "sha256": {
+        "api": "40a6e2331f291051ac2eddc9b6775ea7735d36699eb47a854238d5aa7359aa91",
+        "capabilities": "19bd2372ca4d45f0ba4c6391bf28f5969477950a5ad73e30ee77d44f9a65515c"
       }
     }
   ]

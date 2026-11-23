@@ -67,6 +67,7 @@ def main():
                     "schemaVersion": doc["schemaVersion"],
                     "firmware": doc.get("firmware", {}).get("verified"),
                     "matchPrefix": doc.get("firmware", {}).get("matchPrefix"),
+                    "match": doc.get("firmware", {}).get("match"),
                     "hardwareVersions": doc.get("hardwareVersions", []),
                     "endpointCount": len(doc.get("endpoints", [])),
                     "sha256": {"api": sha256(api), "capabilities": sha256(caps)},

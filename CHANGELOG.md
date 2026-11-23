@@ -7,6 +7,50 @@ would notice, not just what was edited.
 
 ---
 
+## tplink/* — 1.0.0 — 2026-11-23
+
+### Added
+- Nine TP-Link definitions converted from the `routerctl` firmware-extraction
+  project, covering 300 endpoint paths in total:
+
+  | model | variant | endpoints |
+  |---|---|---|
+  | TL-WR840N | v6-fw-evidence | 76 |
+  | TL-WR841N | v14-fw-evidence | 94 |
+  | TL-WR844N | v1-fw-evidence | 2 |
+  | TL-WR845N | v3-fw-evidence | 6 |
+  | TL-WR846N | v1-fw-evidence | 2 |
+  | TL-WR850N | v3-fw-evidence | 7 |
+  | TL-WR940N | v6-fw-evidence | 101 |
+  | TL-WR820N | v2-fw-evidence | 2 |
+  | ARCHER-C24 | v1-fw-evidence | 10 |
+
+### Known limits — read before using
+- Every endpoint is `verified: ui-code`, meaning the path and its form fields
+  were read out of the extracted firmware image. **No live device was available**,
+  so no reply body was ever captured and nothing is live-verified.
+- The login handshake was **not captured** for any of these builds. Each
+  document therefore carries `session.login.verified: "not-captured"`, and both
+  clients (`tools/routerapi.py` and the Java engine) raise a definition error
+  rather than attempting a guess. These definitions can be browsed and diffed
+  but cannot sign in until a capture exists.
+- `firmware.match` is `family`, not `prefix`: these builds ship build dates
+  (e.g. `20260611`), not dotted firmware versions, so there is nothing reliable
+  to prefix-match. A client identifies the model from the device's own UI.
+
+### Changed
+- `schema/api-definition.schema.json`: `session.login` accepts a `verified`
+  field, so a document can say its handshake is unknown instead of omitting the
+  block or lying about it.
+- `schema/index.schema.json` and `tools/build_index.py`: the index carries
+  `match` alongside `matchPrefix`.
+- `tools/routerapi.py` and the Java `RouterClient`: `select()` honours
+  `match: family`, and `login()` refuses an uncaptured handshake.
+- `tools/selftest.py` and `JavaSelftest`: a definition with an uncaptured
+  handshake is tested by proving it refuses, not by driving it.
+
+---
+
 ## tenda/ac10 v1.0-fw15.03.06.50 — 1.0.0 — 2026-11-23
 
 ### Added

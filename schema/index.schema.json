@@ -50,6 +50,7 @@
         "schemaVersion": {"type": "string"},
         "firmware": {"type": ["string", "null"]},
         "matchPrefix": {"type": ["string", "null"]},
+        "match": {"enum": ["exact", "prefix", "family", null], "description": "How to compare the device's firmware string. 'family' means no usable version was published and the client must identify the device from its own UI."},
         "hardwareVersions": {"type": "array", "items": {"type": "string"}},
         "endpointCount": {"type": "integer"},
         "sha256": {

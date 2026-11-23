@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/capabilities.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tplink",
+  "model": "TL-WR850N",
+  "variant": "v3-fw-evidence",
+  "features": {
+    "status": "read-only",
+    "backup": "full",
+    "firmware.upgrade": "full",
+    "usb.storage": "read-only"
+  }
+}

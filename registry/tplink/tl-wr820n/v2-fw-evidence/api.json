@@ -1,0 +1,93 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/api-definition.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tplink",
+  "vendorName": "TP-Link",
+  "model": "TL-WR820N",
+  "modelSlug": "tl-wr820n",
+  "variant": "v2-fw-evidence",
+  "hardwareVersions": [
+    "V2"
+  ],
+  "firmware": {
+    "match": "family",
+    "verified": "20260611",
+    "notes": "Firmware build dates observed in the archive: EU=20260611"
+  },
+  "transport": {
+    "scheme": "http",
+    "defaultHost": "192.168.0.1",
+    "defaultPort": 80,
+    "altHosts": [
+      "tplinkwifi.net",
+      "tplinkmodem.net"
+    ],
+    "pathPrefix": "",
+    "requestTimeoutMs": 12000,
+    "verifyTls": true,
+    "cacheBuster": "none",
+    "notes": "Paths were read out of the firmware image. Which hostname the device answers on was not captured, so the client should try the gateway address first."
+  },
+  "session": {
+    "type": "cookie-on-login",
+    "maxConcurrentSessions": 1,
+    "login": {
+      "endpoint": "/",
+      "method": "POST",
+      "verified": "not-captured",
+      "notes": "The login form itself was not captured for this build, so no password encoding is claimed. Until a capture exists the client must refuse to guess the handshake.",
+      "success": {
+        "kind": "cookie-set"
+      }
+    }
+  },
+  "identify": {
+    "endpoint": "frame.menu.cgi",
+    "field": "model",
+    "equals": "TL-WR820N",
+    "requiresAuth": true,
+    "notes": "The model string is served by the firmware UI; reading it needs a session, so identification happens after login."
+  },
+  "endpoints": [
+    {
+      "id": "frame.menu.cgi",
+      "path": "/frame/menu.cgi",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions EU",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    },
+    {
+      "id": "main.status.htm",
+      "path": "/main/status.htm",
+      "method": "GET",
+      "purpose": "system endpoint observed in the firmware UI",
+      "risk": "safe",
+      "writes": false,
+      "feature": "status",
+      "verified": "ui-code",
+      "evidence": "Read from the firmware web UI; regions EU",
+      "notes": "Response shape was not captured, so the client must treat the reply as opaque and must not assume field names."
+    }
+  ],
+  "provenance": {
+    "verification": "ui-code",
+    "capturedOn": "2026-11-23",
+    "sources": [
+      {
+        "kind": "firmware-image",
+        "ref": "routerctl extraction of TL-WR820N firmware; 2 UI paths read from api_map.md"
+      }
+    ],
+    "notes": "Paths and form fields were read out of the firmware image. No live device was reachable, so no reply body was ever captured and nothing here is live-verified.",
+    "unsupported": [
+      "Response bodies: no live device was available, so no reply was captured",
+      "Login handshake: form and encoding not captured for this build"
+    ]
+  }
+}

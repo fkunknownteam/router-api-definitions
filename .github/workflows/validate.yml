@@ -1,0 +1,65 @@
+# CI: validate every definition on every push and pull request.
+#
+# The registry is data, so the gate is mechanical: schemas, cross-file
+# consistency, the version-bump rule and the index hashes. The self tests then
+# execute every definition with both clients, so a declaration neither client can
+# honour fails here instead of on a user's router.
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  definitions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # validate.py compares against HEAD to catch unbumped edits
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install dependencies
+        run: python3 -m pip install -r tools/requirements.txt
+
+      - name: Rebuild the index and fail if it was stale
+        run: |
+          python3 tools/build_index.py
+          if ! git diff --quiet -- registry/index.json; then
+            echo "::error::registry/index.json is stale. Run tools/build_index.py and commit the result."
+            git --no-pager diff --stat -- registry/index.json
+            exit 1
+          fi
+
+      - name: Validate schemas, cross-file consistency and version bumps
+        run: python3 tools/validate.py
+
+      - name: Self test the Python client against every definition
+        run: python3 tools/selftest.py
+
+      - name: Self test the Android engine against every definition
+        run: bash tools/java_selftest.sh
+
+      - name: Check for accidental secrets
+        run: |
+          # Definitions describe devices, never deployments. A real WAN address,
+          # a serial or a token in a committed file is a leak.
+          if grep -rInE '(password|passwd|secret|token|serial)[[:space:]]*[:=][[:space:]]*"[^"]{6,}"' \
+               registry/ --include='*.json' \
+               | grep -vE '"(password|secret|token)"[[:space:]]*:[[:space:]]*"\{password\}"'; then
+            echo "::error::possible credential in a definition"
+            exit 1
+          fi

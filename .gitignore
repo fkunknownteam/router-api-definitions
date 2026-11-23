@@ -1,0 +1,19 @@
+# scratch
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# build output from tools/java_selftest.sh
+build/
+*.class
+
+# editor and OS noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# the generator scaffold lived outside the repo on purpose; if it ever lands
+# here it must not ship
+gen_*.py

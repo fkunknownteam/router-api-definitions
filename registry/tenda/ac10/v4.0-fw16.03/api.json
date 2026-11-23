@@ -1,0 +1,1745 @@
+{
+  "$schema": "../../../../schema/api-definition.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tenda",
+  "vendorName": "Tenda",
+  "model": "AC10",
+  "modelSlug": "ac10",
+  "variant": "v4.0-fw16.03",
+  "hardwareVersions": [
+    "V4.0"
+  ],
+  "firmware": {
+    "verified": "V16.03",
+    "match": "prefix",
+    "matchPrefix": "V16.03",
+    "family": "goahead-aes-md5",
+    "notes": "The exact build string varies (the Android adapter logs whatever the device reports) and no single full string is quoted here. Match on the V16.03 prefix and confirm adv_hard_ver before writing."
+  },
+  "identify": {
+    "endpoint": "status.system",
+    "field": "adv_hard_ver",
+    "equals": "V4.0",
+    "requiresAuth": true,
+    "notes": "The surest test is behavioural: fetch the AES key, read status.router and decrypt it. A build that answers every getter with base64 that never decrypts is a different dialect, not a wrong password."
+  },
+  "transport": {
+    "scheme": "http",
+    "defaultHost": "192.168.0.1",
+    "defaultPort": 80,
+    "altHosts": [
+      "tendawifi.com"
+    ],
+    "pathPrefix": "",
+    "requestTimeoutMs": 12000,
+    "verifyTls": true,
+    "cacheBuster": "timestamp",
+    "notes": "Getters are called with a nanosecond or millisecond cache-buster which the router ignores."
+  },
+  "session": {
+    "type": "cookie-on-login",
+    "maxConcurrentSessions": 1,
+    "login": {
+      "endpoint": "/login/Auth",
+      "method": "POST",
+      "body": {
+        "username": "admin",
+        "password": "{password}"
+      },
+      "passwordEncoding": "md5-hex",
+      "success": {
+        "kind": "body-number",
+        "successCodes": [],
+        "refusalCodes": {
+          "1": "wrong-password",
+          "2": "wrong-username",
+          "3": "already-signed-in",
+          "4": "locked-out"
+        },
+        "loginPageMarker": "<!DOCTYPE"
+      },
+      "notes": "The device answers a bare number, not a redirect, so success must be confirmed by the cookie as well as by the code. A refused login still returns the full main page, so a body-is-a-page test misreads it as success."
+    },
+    "logout": {
+      "endpoint": "/goform/exit",
+      "method": "GET"
+    },
+    "expiry": {
+      "statusCodes": [
+        302
+      ],
+      "bodyMarkers": [
+        "<!DOCTYPE",
+        "main.html"
+      ],
+      "redirectTo": "/login.html"
+    },
+    "lockout": {
+      "probeEndpoint": "/goform/getLoginInfo",
+      "attemptsField": "leftTimes",
+      "lockedField": "isLocked"
+    }
+  },
+  "crypto": {
+    "type": "aes-128-cbc-base64",
+    "iv": "EU5H62G9ICGRNI43",
+    "ivEncoding": "ascii",
+    "keySource": {
+      "kind": "endpoint-field",
+      "endpoint": "/goform/stokCfg",
+      "field": "sign",
+      "perRequest": true
+    },
+    "appliesTo": {
+      "request": true,
+      "response": true
+    },
+    "plaintextPaths": [
+      "/login/Auth",
+      "/goform/stokCfg",
+      "/goform/getLoginInfo",
+      "/goform/SysToolReboot"
+    ],
+    "notes": "AES-128-CBC, PKCS5/7 padding, base64 on the wire. The sign key is regenerated on every call: fetch it immediately before the request it protects and decrypt the reply with that same key. A cached key yields garbage that looks like corrupt data."
+  },
+  "envelopes": {
+    "resultField": "errCode",
+    "successValue": 0,
+    "errorCodes": [
+      {
+        "code": 1,
+        "reason": "rejected"
+      },
+      {
+        "code": 2,
+        "reason": "another-admin"
+      },
+      {
+        "code": 3,
+        "reason": "busy"
+      }
+    ],
+    "nonJsonEndpoints": [
+      "/login/Auth",
+      "/goform/stokCfg",
+      "/goform/getLoginInfo",
+      "/goform/SysToolReboot",
+      "/goform/exit"
+    ],
+    "notes": "errCode is an unquoted JSON number after decryption. A 302 or a body containing main.html mid-flight means the session slot died, not that the request was rejected."
+  },
+  "endpoints": [
+    {
+      "id": "session.login",
+      "path": "/login/Auth",
+      "method": "POST",
+      "purpose": "Authenticate the admin session.",
+      "uiPage": "login page",
+      "feature": "status",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "username",
+            "type": "string",
+            "notes": "Defaults to admin when the app stores no username."
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "secret": true,
+            "notes": "MD5 hex of the plaintext password."
+          }
+        ]
+      },
+      "response": {
+        "kind": "text"
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Exercised by the Android adapter against an AC10 V4 running V16.03.x. Refusal codes handled in Ac10RouterAdapter.loginBlocking().",
+      "notes": "Reply is a bare number of at most four characters: 1 wrong password, 2 wrong username, 3 already signed in, 4 locked. Anything else is success, confirmed by the session cookie appearing. A full page body means the session slot is gone, not that login worked."
+    },
+    {
+      "id": "session.key",
+      "path": "/goform/stokCfg",
+      "method": "GET",
+      "purpose": "Fetch the per-request AES key.",
+      "uiPage": "every authenticated page",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "sign",
+            "type": "string",
+            "secret": true
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Fetched before every authenticated request by the Android adapter."
+    },
+    {
+      "id": "session.info",
+      "path": "/goform/getLoginInfo",
+      "method": "GET",
+      "purpose": "Lock state and attempts left.",
+      "uiPage": "login page",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "isLocked",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "leftTimes",
+            "type": "integer"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Listed in the adapter's endpoint table; used to avoid burning attempts."
+    },
+    {
+      "id": "status.router",
+      "path": "/goform/GetRouterStatus",
+      "method": "GET",
+      "purpose": "Dashboard: SSID names, client count, WAN state, firmware.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wl24gName",
+            "type": "string"
+          },
+          {
+            "name": "wl5gName",
+            "type": "string"
+          },
+          {
+            "name": "wl24gEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wl5gEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "clientNum",
+            "type": "integer"
+          },
+          {
+            "name": "blackNum",
+            "type": "integer"
+          },
+          {
+            "name": "deviceName",
+            "type": "string"
+          },
+          {
+            "name": "lanIP",
+            "type": "string"
+          },
+          {
+            "name": "lanMAC",
+            "type": "string"
+          },
+          {
+            "name": "workMode",
+            "type": "string"
+          },
+          {
+            "name": "countryCode",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo",
+            "type": "object[]"
+          },
+          {
+            "name": "wanInfo[].wanStatus",
+            "type": "string",
+            "notes": "'1310209' is this build's connected sentinel."
+          },
+          {
+            "name": "wanInfo[].wanIp",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].wanUploadSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          },
+          {
+            "name": "wanInfo[].wanDownloadSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          },
+          {
+            "name": "onlineUpgradeInfo.curVersion",
+            "type": "string"
+          },
+          {
+            "name": "onlineUpgradeInfo.newVersionExist",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Parsed by the Android adapter for the status line and the detail screen; wanStatus compared against the literal '1310209'."
+    },
+    {
+      "id": "status.system",
+      "path": "/goform/GetSystemStatus",
+      "method": "GET",
+      "purpose": "Uptime, firmware/hardware revision, WAN and radio detail.",
+      "uiPage": "system_status.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "adv_firm_ver",
+            "type": "string"
+          },
+          {
+            "name": "adv_hard_ver",
+            "type": "string"
+          },
+          {
+            "name": "adv_run_time",
+            "type": "integer",
+            "unit": "seconds"
+          },
+          {
+            "name": "adv_sys_time",
+            "type": "string"
+          },
+          {
+            "name": "adv_lan_mask",
+            "type": "string"
+          },
+          {
+            "name": "adv_gateway",
+            "type": "string"
+          },
+          {
+            "name": "adv_mask",
+            "type": "string"
+          },
+          {
+            "name": "adv_dns1",
+            "type": "string"
+          },
+          {
+            "name": "adv_dns2",
+            "type": "string"
+          },
+          {
+            "name": "conType",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_channel",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_channel_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_band",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_band_5g",
+            "type": "string"
+          },
+          {
+            "name": "ipv6En",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wanInfo",
+            "type": "object[]"
+          },
+          {
+            "name": "wanInfo[].adv_connect_time",
+            "type": "string",
+            "unit": "seconds"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Read by the adapter's detail screen. This build also exposes conType and ipv6En, which the V15.03.06 line does not."
+    },
+    {
+      "id": "status.summary",
+      "path": "/goform/GetSysStatus",
+      "method": "GET",
+      "purpose": "System tile state.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "firmware",
+            "type": "string"
+          },
+          {
+            "name": "remoteWeb",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "rebootEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "lan",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Listed and read by the Android adapter."
+    },
+    {
+      "id": "status.wireless",
+      "path": "/goform/GetWrlStatus",
+      "method": "GET",
+      "purpose": "WiFi tile states.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wpsEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "beamforming",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "signal",
+            "type": "string"
+          },
+          {
+            "name": "WifiAntijamEn",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Read by the adapter for the WiFi summary."
+    },
+    {
+      "id": "status.advanced",
+      "path": "/goform/GetAdvanceStatus",
+      "method": "GET",
+      "purpose": "Advanced tile states.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "firewall",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "upnp",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "ddns",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "led",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "cloud",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "netControl",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "parentControl",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "dmz",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Read by the adapter; every field is compared to the string '1'."
+    },
+    {
+      "id": "status.vpn",
+      "path": "/goform/GetVpnStatus",
+      "method": "GET",
+      "purpose": "VPN tile states.",
+      "uiPage": "main.html",
+      "feature": "vpn.server",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "server",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "client",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "users",
+            "type": "integer"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Read by the adapter."
+    },
+    {
+      "id": "status.usb",
+      "path": "/goform/GetUSBStatus",
+      "method": "GET",
+      "purpose": "USB share state; errors out on units without USB.",
+      "uiPage": "main.html",
+      "feature": "usb.storage",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "printer",
+            "type": "string"
+          },
+          {
+            "name": "dlna",
+            "type": "string"
+          },
+          {
+            "name": "hasusb",
+            "type": "string"
+          }
+        ],
+        "shapeUnverified": true
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "The adapter calls it inside a try/catch and treats any failure or empty object as 'no USB'. The three field names come from the UI's consumer code and were never seen populated.",
+      "notes": "On a unit with CONFIG_USB_MODULES=n this answers an HTML error page, so the client must not require JSON here."
+    },
+    {
+      "id": "status.product",
+      "path": "/goform/getProduct",
+      "method": "GET",
+      "purpose": "Model identity probe.",
+      "uiPage": "index.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "deviceName",
+            "type": "string"
+          },
+          {
+            "name": "product",
+            "type": "string"
+          },
+          {
+            "name": "accessType",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Used by the adapter's checkSupport() to name the model when a getter fails to decrypt."
+    },
+    {
+      "id": "status.autoReboot",
+      "path": "/goform/GetSysAutoRebbotCfg",
+      "method": "GET",
+      "purpose": "Scheduled reboot configuration.",
+      "uiPage": "main.html",
+      "feature": "autoReboot",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "autoRebootEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "rebootTime",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Read by the adapter's detail screen."
+    },
+    {
+      "id": "status.rebootProgress",
+      "path": "/goform/getRebootStatus",
+      "method": "GET",
+      "purpose": "Reboot progress poll.",
+      "uiPage": "reboot overlay",
+      "feature": "reboot",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "status",
+            "type": "string"
+          }
+        ],
+        "shapeUnverified": true
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Listed in the adapter's endpoint table; the reply shape was not parsed, so no field is claimed beyond a status flag."
+    },
+    {
+      "id": "wifi.basic.get",
+      "path": "/goform/WifiBasicGet",
+      "method": "GET",
+      "purpose": "SSID, password, encryption, enable/hide state, merged-band flag.",
+      "uiPage": "wireless_ssid.html",
+      "feature": "wifi.basic",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wrlEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wrlEn_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "ssid",
+            "type": "string"
+          },
+          {
+            "name": "ssid_5g",
+            "type": "string"
+          },
+          {
+            "name": "security",
+            "type": "string"
+          },
+          {
+            "name": "security_5g",
+            "type": "string"
+          },
+          {
+            "name": "wrlPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wrlPwd_5g",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "hideSsid",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "hideSsid_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "doubleBand",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "notes": "The vendor's band-merge switch, NOT a radio count: 1 means both radios share one name and password. Reading it as 'has 5 GHz' hides the 5 GHz card on every normal router."
+          },
+          {
+            "name": "wl5gName",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Read by the Android adapter. A 5 GHz radio is detected from wrlEn_5g/ssid_5g/wrlPwd_5g/security_5g/wl5gName, never from doubleBand."
+    },
+    {
+      "id": "wifi.basic.set",
+      "path": "/goform/WifiBasicSet",
+      "method": "POST",
+      "purpose": "Save SSID, password, encryption and enable/hide state.",
+      "uiPage": "wireless_ssid.html",
+      "feature": "wifi.basic",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "doubleBand",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "notes": "Must be echoed exactly as read."
+          },
+          {
+            "name": "wrlEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wrlEn_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "security",
+            "type": "string"
+          },
+          {
+            "name": "security_5g",
+            "type": "string"
+          },
+          {
+            "name": "hideSsid",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "hideSsid_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "ssid",
+            "type": "string"
+          },
+          {
+            "name": "wrlPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "ssid_5g",
+            "type": "string"
+          },
+          {
+            "name": "wrlPwd_5g",
+            "type": "string",
+            "secret": true
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "requiresConfirmation": true,
+      "verified": "app-observed",
+      "evidence": "Written and read back by the Android adapter.",
+      "notes": "This build RESETS any field omitted from the form, so the client must read first and re-send every field. When doubleBand is 1 the two bands must be sent the same name and password or the save splits or ignores the second band."
+    },
+    {
+      "id": "wifi.radio.get",
+      "path": "/goform/WifiRadioGet",
+      "method": "GET",
+      "purpose": "Per-band channel, width and mode.",
+      "uiPage": "wireless.html",
+      "feature": "wifi.radio",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "adv_mode",
+            "type": "string"
+          },
+          {
+            "name": "adv_channel",
+            "type": "string"
+          },
+          {
+            "name": "adv_band",
+            "type": "string"
+          },
+          {
+            "name": "adv_country",
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "type": "string[]"
+          },
+          {
+            "name": "adv_mode_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_channel_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_band_5g",
+            "type": "string"
+          },
+          {
+            "name": "channel_5g",
+            "type": "object"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Listed and read by the Android adapter."
+    },
+    {
+      "id": "wifi.radio.set",
+      "path": "/goform/WifiRadioSet",
+      "method": "POST",
+      "purpose": "Save per-band radio settings.",
+      "uiPage": "wireless.html",
+      "feature": "wifi.radio",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "adv_mode",
+            "type": "string"
+          },
+          {
+            "name": "adv_channel",
+            "type": "string"
+          },
+          {
+            "name": "adv_band",
+            "type": "string"
+          },
+          {
+            "name": "adv_mode_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_channel_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_band_5g",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "app-observed",
+      "evidence": "Listed with its exact body in the adapter's endpoint table."
+    },
+    {
+      "id": "wifi.guest.get",
+      "path": "/goform/WifiGuestGet",
+      "method": "GET",
+      "purpose": "Guest network state and credentials.",
+      "uiPage": "main.html",
+      "feature": "wifi.guest",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "guestEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "guestEn_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "guestSsid",
+            "type": "string"
+          },
+          {
+            "name": "guestSsid_5g",
+            "type": "string"
+          },
+          {
+            "name": "guestWrlPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "effectiveTime",
+            "type": "string"
+          },
+          {
+            "name": "shareSpeed",
+            "type": "integer"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Read by the adapter's detail screen."
+    },
+    {
+      "id": "wifi.guest.set",
+      "path": "/goform/WifiGuestSet",
+      "method": "POST",
+      "purpose": "Save the guest network.",
+      "uiPage": "main.html",
+      "feature": "wifi.guest",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "guestEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "guestEn_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "guestSecurity",
+            "type": "string"
+          },
+          {
+            "name": "guestSecurity_5g",
+            "type": "string"
+          },
+          {
+            "name": "guestSsid",
+            "type": "string"
+          },
+          {
+            "name": "guestSsid_5g",
+            "type": "string"
+          },
+          {
+            "name": "guestWrlPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "guestWrlPwd_5g",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "effectiveTime",
+            "type": "string"
+          },
+          {
+            "name": "shareSpeed",
+            "type": "integer"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "app-observed",
+      "evidence": "Listed with its exact body in the adapter's endpoint table; shareSpeed is a percentage x128 on this build."
+    },
+    {
+      "id": "wan.get",
+      "path": "/goform/getWanParameters",
+      "method": "GET",
+      "purpose": "WAN configuration and state.",
+      "uiPage": "net_set.html",
+      "feature": "wan",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wanInfo",
+            "type": "object[]"
+          },
+          {
+            "name": "wanInfo[].wanType",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].connectStatus",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].adslUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wanInfo[].adslPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wanInfo[].dnsAuto",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wanInfo[].dns1",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].dns2",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Listed and read by the Android adapter."
+    },
+    {
+      "id": "wan.set",
+      "path": "/goform/WanParameterSetting",
+      "method": "POST",
+      "purpose": "Save WAN settings.",
+      "uiPage": "net_set.html",
+      "feature": "wan",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "wanType",
+            "type": "string"
+          },
+          {
+            "name": "adslUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "adslPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "dnsAuto",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "dns1",
+            "type": "string"
+          },
+          {
+            "name": "dns2",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "high",
+      "requiresConfirmation": true,
+      "verified": "app-observed",
+      "evidence": "Listed with its body in the adapter's endpoint table."
+    },
+    {
+      "id": "clients.online",
+      "path": "/goform/getOnlineList",
+      "method": "GET",
+      "purpose": "Online clients with throughput and band.",
+      "uiPage": "online_list.html",
+      "feature": "clients.list",
+      "response": {
+        "kind": "json-array",
+        "arrayLayout": "A device row always carries devName; summary rows do not and must be skipped.",
+        "fields": [
+          {
+            "name": "devName",
+            "type": "string"
+          },
+          {
+            "name": "ip",
+            "type": "string"
+          },
+          {
+            "name": "deviceId",
+            "type": "string",
+            "notes": "MAC."
+          },
+          {
+            "name": "black",
+            "type": "integer",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "line",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2"
+            ],
+            "valueLabels": {
+              "0": "wired",
+              "1": "2.4 GHz",
+              "2": "5 GHz"
+            }
+          },
+          {
+            "name": "uploadSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          },
+          {
+            "name": "downloadSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Parsed by the Android adapter; rows without devName are skipped as summaries. This build has no per-client RSSI and the adapter invents none."
+    },
+    {
+      "id": "clients.blacklist.list",
+      "path": "/goform/getBlackRuleList",
+      "method": "GET",
+      "purpose": "Blocked devices.",
+      "uiPage": "online_list.html",
+      "feature": "clients.block",
+      "response": {
+        "kind": "json-array",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "deviceId",
+            "type": "string",
+            "notes": "The adapter reads mac first and deviceId as a fallback."
+          },
+          {
+            "name": "devName",
+            "type": "string"
+          },
+          {
+            "name": "ip",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Read by the adapter so blocked devices can still be listed and unblocked; they are absent from clients.online."
+    },
+    {
+      "id": "clients.block",
+      "path": "/goform/setBlackRule",
+      "method": "POST",
+      "purpose": "Block a device by MAC.",
+      "uiPage": "online_list.html",
+      "feature": "clients.block",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "requiresConfirmation": true,
+      "verified": "app-observed",
+      "evidence": "Written by the Android adapter with an errCode check."
+    },
+    {
+      "id": "clients.unblock",
+      "path": "/goform/delBlackRule",
+      "method": "POST",
+      "purpose": "Unblock a device by MAC.",
+      "uiPage": "online_list.html",
+      "feature": "clients.block",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "app-observed",
+      "evidence": "Written by the Android adapter with an errCode check."
+    },
+    {
+      "id": "clients.rename",
+      "path": "/goform/SetOnlineDevName",
+      "method": "POST",
+      "purpose": "Rename a client.",
+      "uiPage": "online_list.html",
+      "feature": "clients.rename",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "devName",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "app-observed",
+      "evidence": "Written by the Android adapter; cosmetic only."
+    },
+    {
+      "id": "clients.macfilter.reset",
+      "path": "/goform/initWifiMacFilter",
+      "method": "POST",
+      "purpose": "Reset the MAC filter list.",
+      "uiPage": "mac_filter.html",
+      "feature": "macfilter",
+      "request": {
+        "bodyEncoding": "encrypted-form"
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ],
+        "shapeUnverified": true
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "app-observed",
+      "evidence": "Listed in the adapter's endpoint table with an empty body; its effect was not exercised."
+    },
+    {
+      "id": "clients.bandwidth.get",
+      "path": "/goform/GetNetControlList",
+      "method": "GET",
+      "purpose": "Per-device bandwidth caps.",
+      "uiPage": "net_control.html",
+      "feature": "bandwidth",
+      "response": {
+        "kind": "json-array",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "limitUp",
+            "type": "string"
+          },
+          {
+            "name": "limitDown",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Listed and read by the Android adapter."
+    },
+    {
+      "id": "clients.bandwidth.set",
+      "path": "/goform/SetNetControlList",
+      "method": "POST",
+      "purpose": "Set a per-device speed limit.",
+      "uiPage": "net_control.html",
+      "feature": "bandwidth",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "netControlEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "upSpeed",
+            "type": "string"
+          },
+          {
+            "name": "downSpeed",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "app-observed",
+      "evidence": "Listed with its body in the adapter's endpoint table. This build takes a single device per call rather than a whole list."
+    },
+    {
+      "id": "parental.list",
+      "path": "/goform/GetParentCtrlList",
+      "method": "GET",
+      "purpose": "Parental-control state per device.",
+      "uiPage": "main.html",
+      "feature": "parental",
+      "response": {
+        "kind": "json-array",
+        "fields": [
+          {
+            "name": "deviceId",
+            "type": "string"
+          },
+          {
+            "name": "devName",
+            "type": "string"
+          },
+          {
+            "name": "isSet",
+            "type": "string"
+          },
+          {
+            "name": "isControled",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Listed and read by the Android adapter."
+    },
+    {
+      "id": "parental.enable",
+      "path": "/goform/parentControlEn",
+      "method": "POST",
+      "purpose": "Toggle a parental rule.",
+      "uiPage": "main.html",
+      "feature": "parental",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "isControled",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "app-observed",
+      "evidence": "Listed with its body in the adapter's endpoint table."
+    },
+    {
+      "id": "parental.delete",
+      "path": "/goform/delParentalRule",
+      "method": "POST",
+      "purpose": "Delete a parental rule.",
+      "uiPage": "main.html",
+      "feature": "parental",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "app-observed",
+      "evidence": "Listed with its body in the adapter's endpoint table."
+    },
+    {
+      "id": "system.reboot",
+      "path": "/goform/SysToolReboot",
+      "method": "POST",
+      "purpose": "Reboot the router.",
+      "uiPage": "system_reboot.html",
+      "feature": "reboot",
+      "request": {
+        "bodyEncoding": "form"
+      },
+      "response": {
+        "kind": "text"
+      },
+      "writes": true,
+      "risk": "destructive",
+      "requiresConfirmation": true,
+      "verified": "app-observed",
+      "evidence": "Called by the Android adapter, which treats a dropped connection as success and clears its session.",
+      "notes": "On this line the reboot form is a PLAIN submit: it is not AES-encrypted and carries no body. Sending an encrypted body here fails."
+    },
+    {
+      "id": "system.password.state",
+      "path": "/goform/SysToolpassword",
+      "method": "GET",
+      "purpose": "Admin password presence.",
+      "uiPage": "system_password.html",
+      "feature": "password",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "ispwd",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "remoteEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Listed in the adapter's endpoint table."
+    },
+    {
+      "id": "system.wanSpeedTest",
+      "path": "/goform/SetSpeedWan",
+      "method": "POST",
+      "purpose": "Trigger a WAN speed test.",
+      "uiPage": "main.html",
+      "feature": "wan",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "speed",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ],
+        "shapeUnverified": true
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "app-observed",
+      "evidence": "Listed with its body in the adapter's endpoint table; the reply was not parsed."
+    },
+    {
+      "id": "system.exit",
+      "path": "/goform/exit",
+      "method": "GET",
+      "purpose": "Log out.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "html"
+      },
+      "writes": true,
+      "risk": "safe",
+      "verified": "app-observed",
+      "evidence": "Listed in the adapter's endpoint table."
+    }
+  ],
+  "provenance": {
+    "verification": "app-observed",
+    "capturedOn": "2026-11-22",
+    "sources": [
+      {
+        "kind": "client-code",
+        "ref": "universal-router-control/app/src/main/java/com/universal/routercontrol/Ac10RouterAdapter.java",
+        "notes": "The endpoint table, request bodies and field names the shipping Android app uses against this firmware line."
+      },
+      {
+        "kind": "live-response",
+        "ref": "Values the app parsed at runtime",
+        "notes": "Raw replies were not retained, so this document claims only what the app read and wrote."
+      }
+    ],
+    "unsupported": [
+      "/goform/GetUSBStatus"
+    ],
+    "notes": "No raw response bodies were archived for this line, so endpoints are marked app-observed rather than live-capture. Two fields carry extra weight: doubleBand is the vendor's band-merge switch and not a radio count, and wanStatus uses the sentinel '1310209' for connected. Both were learned the hard way and are recorded so a generic client does not repeat the mistakes."
+  }
+}

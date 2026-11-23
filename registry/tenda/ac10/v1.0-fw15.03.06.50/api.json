@@ -1,0 +1,5914 @@
+{
+  "$schema": "../../../../schema/api-definition.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tenda",
+  "vendorName": "Tenda",
+  "model": "AC10",
+  "modelSlug": "ac10",
+  "variant": "v1.0-fw15.03.06.50",
+  "hardwareVersions": [
+    "V1.0"
+  ],
+  "firmware": {
+    "verified": "V15.03.06.50_multi",
+    "match": "prefix",
+    "matchPrefix": "V15.03.06",
+    "family": "goahead-md5-plain",
+    "notes": "Hardware V1.0, Realtek RTL8197F. The UI's macro_config.js still labels itself ac10_V2.0.0.0(8254)_cn while the device reports V15.03.06.50_multi; field names match either way. Build flags in macro_config.js decide which features exist at all."
+  },
+  "transport": {
+    "scheme": "http",
+    "defaultHost": "192.168.0.1",
+    "defaultPort": 80,
+    "altHosts": [
+      "tendawifi.com"
+    ],
+    "pathPrefix": "",
+    "requestTimeoutMs": 12000,
+    "verifyTls": true,
+    "cacheBuster": "random",
+    "notes": "Getters take no parameters; the UI appends a random cache-buster which the router ignores. The device serves plaintext JSON, so crypto is omitted from this document."
+  },
+  "session": {
+    "type": "cookie-on-login",
+    "maxConcurrentSessions": 1,
+    "login": {
+      "endpoint": "/login/Auth",
+      "method": "POST",
+      "body": {
+        "username": "admin",
+        "password": "{password}"
+      },
+      "passwordEncoding": "md5-hex",
+      "success": {
+        "kind": "cookie-set",
+        "refusalCodes": {
+          "1": "wrong-password",
+          "2": "wrong-username",
+          "3": "already-signed-in",
+          "4": "locked-out"
+        },
+        "loginPageMarker": "<!DOCTYPE"
+      }
+    },
+    "logout": {
+      "endpoint": "/goform/exit",
+      "method": "GET"
+    },
+    "expiry": {
+      "statusCodes": [
+        302
+      ],
+      "bodyMarkers": [
+        "<!DOCTYPE"
+      ],
+      "redirectTo": "/login.html"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "status.router",
+      "path": "/goform/GetRouterStatus",
+      "method": "GET",
+      "purpose": "Dashboard landing data: work mode, per-WAN status, client count, both SSID names, firmware and upgrade notice.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wl24gEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wl24gName",
+            "type": "string"
+          },
+          {
+            "name": "wl5gEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wl5gName",
+            "type": "string"
+          },
+          {
+            "name": "clientNum",
+            "type": "integer"
+          },
+          {
+            "name": "blackNum",
+            "type": "integer"
+          },
+          {
+            "name": "listNum",
+            "type": "integer"
+          },
+          {
+            "name": "deviceName",
+            "type": "string",
+            "notes": "Model string; the UI does not read it, but it is a reliable identify field."
+          },
+          {
+            "name": "lanIP",
+            "type": "string"
+          },
+          {
+            "name": "lanMAC",
+            "type": "string"
+          },
+          {
+            "name": "workMode",
+            "type": "string",
+            "values": [
+              "router",
+              "ap",
+              "wisp",
+              "apclient"
+            ],
+            "notes": "Anything other than router/ap/wisp is rendered as Client+AP."
+          },
+          {
+            "name": "apStatus",
+            "type": "string",
+            "notes": "7-digit code; only '2303002' success and '2103001' fail are distinguished."
+          },
+          {
+            "name": "wanInfo",
+            "type": "object[]",
+            "notes": "One entry per WAN port; only index 0 is used in non-router modes."
+          },
+          {
+            "name": "wanInfo[].wanStatus",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].wanIp",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].wanUploadSpeed",
+            "type": "number",
+            "unit": "KB/s"
+          },
+          {
+            "name": "wanInfo[].wanDownloadSpeed",
+            "type": "number",
+            "unit": "KB/s"
+          },
+          {
+            "name": "onlineUpgradeInfo.curVersion",
+            "type": "string"
+          },
+          {
+            "name": "onlineUpgradeInfo.newVersionExist",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "onlineUpgradeInfo.newVersion",
+            "type": "string"
+          },
+          {
+            "name": "lineup",
+            "type": "string",
+            "notes": "Not read by the UI; per-interface link-up flags, '|'-joined."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture quoted verbatim in router-api.md#GetRouterStatus; polled every 5 s by staInfo."
+    },
+    {
+      "id": "status.system",
+      "path": "/goform/GetSystemStatus",
+      "method": "GET",
+      "purpose": "System Status page: uptime, firmware/hardware revision, WAN detail, LAN identity, both radios.",
+      "uiPage": "system_status.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "adv_sys_time",
+            "type": "string",
+            "notes": "'2000-XX-XX' means the clock has not synced yet."
+          },
+          {
+            "name": "adv_run_time",
+            "type": "integer",
+            "unit": "seconds"
+          },
+          {
+            "name": "adv_firm_ver",
+            "type": "string"
+          },
+          {
+            "name": "adv_hard_ver",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo",
+            "type": "object[]"
+          },
+          {
+            "name": "wanInfo[].adv_connect_status",
+            "type": "integer",
+            "values": [
+              "0",
+              "1",
+              "2",
+              "3"
+            ],
+            "valueLabels": {
+              "0": "cable disconnected",
+              "1": "disconnected",
+              "2": "connecting",
+              "3": "connected"
+            }
+          },
+          {
+            "name": "wanInfo[].adv_connect_type",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "valueLabels": {
+              "0": "dynamic",
+              "1": "static",
+              "2": "pppoe",
+              "3": "ru-pptp",
+              "4": "ru-l2tp",
+              "5": "ru-pppoe"
+            }
+          },
+          {
+            "name": "wanInfo[].adv_connect_time",
+            "type": "string",
+            "unit": "seconds"
+          },
+          {
+            "name": "wanInfo[].adv_ip",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].adv_mask",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].adv_gateway",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].adv_dns1",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].adv_dns2",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].adv_mac",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].wanUploadSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          },
+          {
+            "name": "wanInfo[].wanDownloadSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          },
+          {
+            "name": "adv_lan_ip",
+            "type": "string"
+          },
+          {
+            "name": "adv_lan_mask",
+            "type": "string"
+          },
+          {
+            "name": "adv_lan_mac",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_en",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "notes": "Hidden-SSID flag, NOT radio on/off: 1 = hidden."
+          },
+          {
+            "name": "adv_wrl_ssid",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_sec",
+            "type": "string",
+            "values": [
+              "none",
+              "wpapsk",
+              "wpa2psk",
+              "wpawpa2psk"
+            ]
+          },
+          {
+            "name": "adv_wrl_channel",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_band",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_mac",
+            "type": "string"
+          },
+          {
+            "name": "wifi_enable_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "notes": "0 hides the whole 5 GHz block of this reply."
+          },
+          {
+            "name": "adv_wrl_ssid_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_sec_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_channel_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_wrl_band_5g",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture with per-field decode in router-api.md#GetSystemStatus."
+    },
+    {
+      "id": "status.summary",
+      "path": "/goform/GetSysStatus",
+      "method": "GET",
+      "purpose": "System Settings tile row: LAN address, reboot schedule flag, remote-admin flag, work mode, DHCP-reservation state, clock sync.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "firmware",
+            "type": "string"
+          },
+          {
+            "name": "rebootEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "remoteWeb",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "lan",
+            "type": "string"
+          },
+          {
+            "name": "syncInternetTime",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "apClientConnect",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "ipMacBindEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture: {\"firmware\":\"V15.03.06.50_multi\",\"rebootEn\":\"1\",...}. Distinct from status.system; both exist on this firmware."
+    },
+    {
+      "id": "status.wireless",
+      "path": "/goform/GetWrlStatus",
+      "method": "GET",
+      "purpose": "WiFi tab tile states: schedule, repeating, WPS, name/password, signal level, beamforming, AP mode, anti-interference.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "schedWifiEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wispEn",
+            "type": "string",
+            "notes": "0 off, 2 connected, other = on but not connected."
+          },
+          {
+            "name": "wpsEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "namePwd",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "signal",
+            "type": "string",
+            "notes": "Two digits: 2.4 GHz level then 5 GHz level; '0' low, '1' medium, '2' high."
+          },
+          {
+            "name": "beamforming",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "apMode",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "WifiAntijamEn",
+            "type": "string",
+            "values": [
+              "auto",
+              "true",
+              "false"
+            ],
+            "notes": "Any other value renders as Auto."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"schedWifiEn\":\"0\",\"wispEn\":\"0\",\"wpsEn\":\"0\",\"namePwd\":\"1\",\"signal\":\"22\",\"beamforming\":\"1\",\"apMode\":\"0\",\"WifiAntijamEn\":\"auto\"}"
+    },
+    {
+      "id": "status.advanced",
+      "path": "/goform/GetAdvanceStatus",
+      "method": "GET",
+      "purpose": "Advanced Settings tile states and the AP-client gating flag.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "nopwd",
+            "type": "string"
+          },
+          {
+            "name": "netControl",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "led",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "cloud",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "sleepMode",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "remoteWeb",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "ddns",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "upnp",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "iptv",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "dmz",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "parentControl",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "firewall",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "staticRoute",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "virtualServer",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "macFilterType",
+            "type": "string",
+            "values": [
+              "black",
+              "white"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"nopwd\":\"false\",\"netControl\":\"0\",\"led\":\"1\",\"cloud\":\"0\",\"sleepMode\":\"0\",\"remoteWeb\":\"0\",\"ddns\":\"0\",\"upnp\":\"1\",\"iptv\":\"0\",\"wl_mode\":\"ap\",\"dmz\":\"0\",\"parentControl\":\"0\",\"firewall\":\"1\",\"staticRoute\":\"0\",\"virtualServer\":\"1\",\"macFilterType\":\"black\"}"
+    },
+    {
+      "id": "status.vpn",
+      "path": "/goform/GetVpnStatus",
+      "method": "GET",
+      "purpose": "VPN tab tiles: PPTP server, client, online user count.",
+      "uiPage": "main.html",
+      "feature": "vpn.server",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "server",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "client",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "users",
+            "type": "integer"
+          },
+          {
+            "name": "workMode",
+            "type": "string"
+          },
+          {
+            "name": "wanType",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ],
+            "notes": "When 3 or 4 the UI refuses to open the VPN client page."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"server\":\"0\",\"client\":\"0\",\"workMode\":\"ap\",\"wanType\":\"2\",\"users\":\"0\"}"
+    },
+    {
+      "id": "status.product",
+      "path": "/goform/getProduct",
+      "method": "GET",
+      "purpose": "Identity probe used by the quick-setup wizard: product code and access type.",
+      "uiPage": "index.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "product",
+            "type": "string",
+            "notes": "Internal product code, e.g. 'f1203' — not the marketing model."
+          },
+          {
+            "name": "accessType",
+            "type": "integer",
+            "values": [
+              "1",
+              "2"
+            ],
+            "valueLabels": {
+              "1": "wired",
+              "2": "wireless"
+            }
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"product\":\"f1203\",\"accessType\":\"1\"}"
+    },
+    {
+      "id": "status.autoReboot",
+      "path": "/goform/GetSysAutoRebbotCfg",
+      "method": "GET",
+      "purpose": "Scheduled-reboot configuration; also the cheapest session-alive probe the UI uses on every tab switch.",
+      "uiPage": "main.html",
+      "feature": "autoReboot",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "autoRebootEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "rebootTime",
+            "type": "string"
+          },
+          {
+            "name": "delayRebootEn",
+            "type": "string",
+            "values": [
+              "true",
+              "false"
+            ]
+          },
+          {
+            "name": "timeUp",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "speed",
+            "type": "string"
+          },
+          {
+            "name": "time",
+            "type": "string",
+            "notes": "Present but unread by the UI."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"autoRebootEn\":\"1\",\"time\":\"03:00-05:0\",\"rebootTime\":\"03:00\",\"delayRebootEn\":\"false\",\"timeUp\":\"0\",\"speed\":\"3\"}. Note the vendor's 'Rebbot' misspelling is part of the wire path."
+    },
+    {
+      "id": "status.homeLink",
+      "path": "/goform/getHomeLink",
+      "method": "GET",
+      "purpose": "Vendor homepage URL for the help links; only requested when the UI language is Chinese.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "homePageLink",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"homePageLink\":\"http://www.tenda.com.cn\"}"
+    },
+    {
+      "id": "status.upgradeVersion",
+      "path": "/goform/SysToolGetUpgrade",
+      "method": "GET",
+      "purpose": "Currently running firmware string, shown as Current Version on the upgrade page.",
+      "uiPage": "system_upgrade.html",
+      "feature": "firmware.upgrade",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "cur_fw_ver",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"cur_fw_ver\":\"V15.03.06.50_multi\"}"
+    },
+    {
+      "id": "wan.get",
+      "path": "/goform/getWanParameters",
+      "method": "GET",
+      "purpose": "Full WAN configuration and live connection state for up to two WAN ports.",
+      "uiPage": "net_set.html",
+      "feature": "wan",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "country",
+            "type": "string"
+          },
+          {
+            "name": "wl_mode",
+            "type": "string",
+            "values": [
+              "ap",
+              "wisp",
+              "apclient"
+            ],
+            "notes": "'wisp' removes PPPoE from the UI dropdown."
+          },
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          },
+          {
+            "name": "guestIp",
+            "type": "string"
+          },
+          {
+            "name": "guestMask",
+            "type": "string"
+          },
+          {
+            "name": "multiWanEn",
+            "type": "string",
+            "values": [
+              "true",
+              "false"
+            ]
+          },
+          {
+            "name": "lineUp",
+            "type": "string",
+            "notes": "One character per WAN; '1' = cable present."
+          },
+          {
+            "name": "wanInfo",
+            "type": "object[]"
+          },
+          {
+            "name": "wanInfo[].wanType",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ]
+          },
+          {
+            "name": "wanInfo[].connectStatus",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].connectTime",
+            "type": "string",
+            "unit": "seconds"
+          },
+          {
+            "name": "wanInfo[].downSpeedLimit",
+            "type": "string",
+            "unit": "Mbps, blank = unlimited"
+          },
+          {
+            "name": "wanInfo[].wanIp",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].staticIp",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].mask",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].gateway",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].dnsAuto",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wanInfo[].dns1",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].dns2",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].vpnClient",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wanInfo[].vpnClientUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wanInfo[].vpnWanType",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wanInfo[].vpnServer",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].vpnUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wanInfo[].vpnPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wanInfo[].adslUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wanInfo[].adslPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wanInfo[].pptpSvrIp",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].pptpSvrMask",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture with full field decode in router-api.md#getWanParameters; polled every 5 s on the tab."
+    },
+    {
+      "id": "wan.set",
+      "path": "/goform/WanParameterSetting",
+      "method": "POST",
+      "purpose": "Save or connect/disconnect one WAN, or save both plus the dual-WAN toggle.",
+      "uiPage": "net_set.html",
+      "feature": "wan",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "module",
+            "type": "string",
+            "values": [
+              "wan1",
+              "wan2",
+              "wan1wan2"
+            ]
+          },
+          {
+            "name": "action",
+            "type": "string",
+            "values": [
+              "disconnect"
+            ],
+            "notes": "Present only on the disconnect variant."
+          },
+          {
+            "name": "connect",
+            "type": "string",
+            "values": [
+              "1"
+            ]
+          },
+          {
+            "name": "wanType",
+            "type": "string"
+          },
+          {
+            "name": "wanType2",
+            "type": "string"
+          },
+          {
+            "name": "adslUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "adslPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "staticIp",
+            "type": "string"
+          },
+          {
+            "name": "mask",
+            "type": "string"
+          },
+          {
+            "name": "gateway",
+            "type": "string"
+          },
+          {
+            "name": "dnsAuto",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "dns1",
+            "type": "string"
+          },
+          {
+            "name": "dns2",
+            "type": "string"
+          },
+          {
+            "name": "downSpeedLimit",
+            "type": "string"
+          },
+          {
+            "name": "downSpeedLimit2",
+            "type": "string"
+          },
+          {
+            "name": "multiWanEn",
+            "type": "string",
+            "values": [
+              "true",
+              "false"
+            ]
+          },
+          {
+            "name": "vpnServer",
+            "type": "string"
+          },
+          {
+            "name": "vpnUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "vpnPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "vpnWanType",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          },
+          {
+            "name": "sleep_time",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "high",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Live round-trip; three body variants documented in router-api.md#WanParameterSetting.",
+      "notes": "Reconfiguring the active WAN drops internet. The dual-WAN toggle needs a reboot to take effect."
+    },
+    {
+      "id": "wan.macMtu.get",
+      "path": "/goform/AdvGetMacMtuWan",
+      "method": "GET",
+      "purpose": "Per-WAN MTU, port speed and MAC-clone configuration.",
+      "uiPage": "mac_clone.html",
+      "feature": "wan.macclone",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wanInfo",
+            "type": "object[]"
+          },
+          {
+            "name": "wanInfo[].wanType",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5"
+            ]
+          },
+          {
+            "name": "wanInfo[].wanMTU",
+            "type": "integer"
+          },
+          {
+            "name": "wanInfo[].wanSpeed",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4"
+            ],
+            "valueLabels": {
+              "0": "auto",
+              "1": "10M-fdx",
+              "2": "10M-hdx",
+              "3": "100M-fdx",
+              "4": "100M-hdx"
+            }
+          },
+          {
+            "name": "wanInfo[].cloneType",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2"
+            ],
+            "valueLabels": {
+              "0": "default",
+              "1": "clone-local",
+              "2": "custom"
+            }
+          },
+          {
+            "name": "wanInfo[].defMac",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].deviceMac",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].mac",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].serviceName",
+            "type": "string"
+          },
+          {
+            "name": "wanInfo[].serverName",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture; PPPoE service/server name fields appear only when the build enables them.",
+      "notes": "Save is disabled by the UI in WISP mode."
+    },
+    {
+      "id": "wan.macMtu.set",
+      "path": "/goform/AdvSetMacMtuWan",
+      "method": "POST",
+      "purpose": "Set WAN MTU, port speed and cloned MAC.",
+      "uiPage": "mac_clone.html",
+      "feature": "wan.macclone",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "wanMTU",
+            "type": "integer"
+          },
+          {
+            "name": "wanSpeed",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4"
+            ]
+          },
+          {
+            "name": "cloneType",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2"
+            ]
+          },
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "serviceName",
+            "type": "string"
+          },
+          {
+            "name": "serverName",
+            "type": "string"
+          },
+          {
+            "name": "wanMTU2",
+            "type": "string"
+          },
+          {
+            "name": "wanSpeed2",
+            "type": "string"
+          },
+          {
+            "name": "cloneType2",
+            "type": "string"
+          },
+          {
+            "name": "mac2",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting current values (errCode 0, GET unchanged).",
+      "notes": "Renegotiates the WAN interface. An ISP that binds the first-seen MAC will reject a wrong clone."
+    },
+    {
+      "id": "lan.get",
+      "path": "/goform/AdvGetLanIp",
+      "method": "GET",
+      "purpose": "LAN address, DHCP server settings and the cross-feature addresses the UI validates against.",
+      "uiPage": "lan.html",
+      "feature": "lan",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          },
+          {
+            "name": "dhcpEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "startIp",
+            "type": "string"
+          },
+          {
+            "name": "endIp",
+            "type": "string"
+          },
+          {
+            "name": "leaseTime",
+            "type": "string",
+            "unit": "seconds"
+          },
+          {
+            "name": "lanDnsAuto",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "lanDns1",
+            "type": "string"
+          },
+          {
+            "name": "lanDns2",
+            "type": "string"
+          },
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "wanIp",
+            "type": "string"
+          },
+          {
+            "name": "wanMask",
+            "type": "string"
+          },
+          {
+            "name": "wanIp2",
+            "type": "string"
+          },
+          {
+            "name": "wanMask2",
+            "type": "string"
+          },
+          {
+            "name": "serverIp",
+            "type": "string"
+          },
+          {
+            "name": "vlan2Ip",
+            "type": "string"
+          },
+          {
+            "name": "vlan2Mask",
+            "type": "string"
+          },
+          {
+            "name": "remoteIp",
+            "type": "string"
+          },
+          {
+            "name": "pptpSvrIp",
+            "type": "string"
+          },
+          {
+            "name": "pptpSvrMask",
+            "type": "string"
+          },
+          {
+            "name": "vpnCliIp",
+            "type": "string"
+          },
+          {
+            "name": "guestIp",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture; the trailing group is read-only validation context."
+    },
+    {
+      "id": "lan.set",
+      "path": "/goform/AdvSetLanip",
+      "method": "POST",
+      "purpose": "Change LAN address, mask, DHCP range, lease time and LAN DNS.",
+      "uiPage": "lan.html",
+      "feature": "lan",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          },
+          {
+            "name": "dhcpEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "startIp",
+            "type": "string"
+          },
+          {
+            "name": "endIp",
+            "type": "string"
+          },
+          {
+            "name": "leaseTime",
+            "type": "integer"
+          },
+          {
+            "name": "lanDnsAuto",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "lanDns1",
+            "type": "string"
+          },
+          {
+            "name": "lanDns2",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "high",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; not written on hardware because it moves the admin address.",
+      "notes": "Changing lanIp relocates the management interface mid-session."
+    },
+    {
+      "id": "lan.bind.get",
+      "path": "/goform/GetIpMacBind",
+      "method": "GET",
+      "purpose": "Current DHCP leases plus the bound IP/MAC pairs.",
+      "uiPage": "ip_mac_bind.html",
+      "feature": "dhcp.reservation",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          },
+          {
+            "name": "dhttpIP",
+            "type": "string",
+            "notes": "Address the UI forbids binding to."
+          },
+          {
+            "name": "dhcpClientList",
+            "type": "object[]"
+          },
+          {
+            "name": "dhcpClientList[].ipaddr",
+            "type": "string"
+          },
+          {
+            "name": "dhcpClientList[].macaddr",
+            "type": "string"
+          },
+          {
+            "name": "dhcpClientList[].devname",
+            "type": "string"
+          },
+          {
+            "name": "dhcpClientList[].status",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "bindList",
+            "type": "object[]"
+          },
+          {
+            "name": "bindList[].ipaddr",
+            "type": "string"
+          },
+          {
+            "name": "bindList[].macaddr",
+            "type": "string"
+          },
+          {
+            "name": "bindList[].devname",
+            "type": "string"
+          },
+          {
+            "name": "bindList[].status",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture. A devname shaped like a UUID means the device never sent a DHCP hostname."
+    },
+    {
+      "id": "lan.bind.set",
+      "path": "/goform/SetIpMacBind",
+      "method": "POST",
+      "purpose": "Replace the whole set of IP/MAC bindings.",
+      "uiPage": "ip_mac_bind.html",
+      "feature": "dhcp.reservation",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "bindnum",
+            "type": "integer"
+          },
+          {
+            "name": "list",
+            "type": "string"
+          }
+        ],
+        "listEncoding": {
+          "field": "list",
+          "rowSeparator": "\n",
+          "columnSeparator": "\r",
+          "columns": [
+            "devName",
+            "mac",
+            "ip"
+          ],
+          "replaceWholeList": true,
+          "maxRows": 32
+        }
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by adding a dummy binding, reading it back and removing it.",
+      "notes": "The UI ignores errCode and always reports success. A binding only applies the next time that device requests a lease."
+    },
+    {
+      "id": "wifi.basic.get",
+      "path": "/goform/WifiBasicGet",
+      "method": "GET",
+      "purpose": "SSID, password, encryption and enable/hide state per band.",
+      "uiPage": "wireless_ssid.html",
+      "feature": "wifi.basic",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wrlEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wrlEn_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "ssid",
+            "type": "string",
+            "maxLength": 32,
+            "notes": "Max 32 bytes, not characters."
+          },
+          {
+            "name": "ssid_5g",
+            "type": "string",
+            "maxLength": 32
+          },
+          {
+            "name": "security",
+            "type": "string",
+            "values": [
+              "none",
+              "wpapsk",
+              "wpa2psk",
+              "wpawpa2psk"
+            ],
+            "valueLabels": {
+              "wpawpa2psk": "WPA/WPA2-PSK"
+            }
+          },
+          {
+            "name": "security_5g",
+            "type": "string",
+            "values": [
+              "none",
+              "wpapsk",
+              "wpa2psk",
+              "wpawpa2psk"
+            ]
+          },
+          {
+            "name": "wrlPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wrlPwd_5g",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "hideSsid",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "hideSsid_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wpapsk_type",
+            "type": "string"
+          },
+          {
+            "name": "wpapsk_type_5g",
+            "type": "string"
+          },
+          {
+            "name": "wpapsk_crypto",
+            "type": "string"
+          },
+          {
+            "name": "wpapsk_crypto_5g",
+            "type": "string"
+          },
+          {
+            "name": "uptime",
+            "type": "string"
+          },
+          {
+            "name": "uptime_5g",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture. wpapsk_* and uptime* are present but unread by the page's JS."
+    },
+    {
+      "id": "wifi.basic.set",
+      "path": "/goform/WifiBasicSet",
+      "method": "POST",
+      "purpose": "Save SSID, password, encryption and enable/hide state per band.",
+      "uiPage": "wireless_ssid.html",
+      "feature": "wifi.basic",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "wrlEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wrlEn_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "security",
+            "type": "string",
+            "values": [
+              "none",
+              "wpapsk",
+              "wpa2psk",
+              "wpawpa2psk"
+            ]
+          },
+          {
+            "name": "security_5g",
+            "type": "string",
+            "values": [
+              "none",
+              "wpapsk",
+              "wpa2psk",
+              "wpawpa2psk"
+            ]
+          },
+          {
+            "name": "ssid",
+            "type": "string",
+            "maxLength": 32
+          },
+          {
+            "name": "ssid_5g",
+            "type": "string",
+            "maxLength": 32
+          },
+          {
+            "name": "hideSsid",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "hideSsid_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wrlPwd",
+            "type": "string",
+            "secret": true,
+            "notes": "8-63 chars, or 64 hex chars as a raw PSK."
+          },
+          {
+            "name": "wrlPwd_5g",
+            "type": "string",
+            "secret": true
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Written and read back on hardware; the app resubmits every field because omitted ones reset.",
+      "notes": "A wrong password field locks the client out on that band. Password is required whenever that band's security is not 'none'."
+    },
+    {
+      "id": "wifi.radio.get",
+      "path": "/goform/WifiRadioGet",
+      "method": "GET",
+      "purpose": "Radio mode, channel and bandwidth per band, plus the channel lists this build allows.",
+      "uiPage": "wireless.html",
+      "feature": "wifi.radio",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "adv_mode",
+            "type": "string",
+            "values": [
+              "bgn",
+              "bg",
+              "n only"
+            ]
+          },
+          {
+            "name": "adv_channel",
+            "type": "string",
+            "values": [
+              "0"
+            ],
+            "notes": "'0' = auto, otherwise the channel number."
+          },
+          {
+            "name": "adv_band",
+            "type": "string",
+            "values": [
+              "20",
+              "40",
+              "auto"
+            ]
+          },
+          {
+            "name": "adv_extend_channel",
+            "type": "string"
+          },
+          {
+            "name": "adv_country",
+            "type": "string"
+          },
+          {
+            "name": "channel",
+            "type": "string[]",
+            "notes": "Index 0 is a placeholder for Auto."
+          },
+          {
+            "name": "adv_mode_5g",
+            "type": "string",
+            "values": [
+              "ac",
+              "ac only"
+            ]
+          },
+          {
+            "name": "adv_channel_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_band_5g",
+            "type": "string",
+            "values": [
+              "20",
+              "40",
+              "80",
+              "auto"
+            ]
+          },
+          {
+            "name": "adv_extend_channel_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_country_5g",
+            "type": "string"
+          },
+          {
+            "name": "channel_5g",
+            "type": "object",
+            "notes": "Keyed by bandwidth '20'/'40'/'80'; each value is the allowed channel list."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture; the 5 GHz option set depends on what the region reports.",
+      "notes": "On the AC10 the 5 GHz power menu labels 'low' as Medium and offers no low setting."
+    },
+    {
+      "id": "wifi.radio.set",
+      "path": "/goform/WifiRadioSet",
+      "method": "POST",
+      "purpose": "Save per-band radio mode, channel and bandwidth.",
+      "uiPage": "wireless.html",
+      "feature": "wifi.radio",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "adv_mode",
+            "type": "string",
+            "values": [
+              "bgn",
+              "bg",
+              "n only"
+            ]
+          },
+          {
+            "name": "adv_channel",
+            "type": "string"
+          },
+          {
+            "name": "adv_band",
+            "type": "string",
+            "values": [
+              "20",
+              "40",
+              "auto"
+            ]
+          },
+          {
+            "name": "adv_mode_5g",
+            "type": "string",
+            "values": [
+              "ac",
+              "ac only"
+            ]
+          },
+          {
+            "name": "adv_channel_5g",
+            "type": "string"
+          },
+          {
+            "name": "adv_band_5g",
+            "type": "string",
+            "values": [
+              "20",
+              "40",
+              "80",
+              "auto"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting current values.",
+      "notes": "Restarts the changed radio, dropping its associated clients. 'bg' forces 20 MHz on 2.4 GHz."
+    },
+    {
+      "id": "wifi.guest.get",
+      "path": "/goform/WifiGuestGet",
+      "method": "GET",
+      "purpose": "Guest network state, credentials, validity window and shared bandwidth cap.",
+      "uiPage": "main.html",
+      "feature": "wifi.guest",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wl_en",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "guestEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "guestEn_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "hideSsid",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "guestSsid",
+            "type": "string"
+          },
+          {
+            "name": "guestWrlPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "hideSsid_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "guestSsid_5g",
+            "type": "string"
+          },
+          {
+            "name": "guestWrlPwd_5g",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "effectiveTime",
+            "type": "string",
+            "values": [
+              "0",
+              "4",
+              "8"
+            ],
+            "valueLabels": {
+              "0": "always",
+              "4": "4 hours",
+              "8": "8 hours"
+            }
+          },
+          {
+            "name": "shareSpeed",
+            "type": "integer",
+            "unit": "stored as Mbps x128; 0 = unlimited"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture. guestEn and guestEn_5g are always equal in practice."
+    },
+    {
+      "id": "wifi.guest.set",
+      "path": "/goform/WifiGuestSet",
+      "method": "POST",
+      "purpose": "Save the guest network.",
+      "uiPage": "main.html",
+      "feature": "wifi.guest",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "guestEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "guestEn_5g",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "notes": "Must equal guestEn."
+          },
+          {
+            "name": "guestSecurity",
+            "type": "string",
+            "values": [
+              "none",
+              "wpapsk"
+            ]
+          },
+          {
+            "name": "guestSecurity_5g",
+            "type": "string",
+            "values": [
+              "none",
+              "wpapsk"
+            ]
+          },
+          {
+            "name": "guestSsid",
+            "type": "string"
+          },
+          {
+            "name": "guestSsid_5g",
+            "type": "string"
+          },
+          {
+            "name": "guestWrlPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "guestWrlPwd_5g",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "effectiveTime",
+            "type": "string",
+            "values": [
+              "0",
+              "4",
+              "8"
+            ]
+          },
+          {
+            "name": "shareSpeed",
+            "type": "integer",
+            "unit": "Mbps x128"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Verified live; template from the page's objTostring body.",
+      "notes": "The vendor's own JS sends guestSecurity=wpapsk unconditionally because it reads a non-existent #wrlPwd field, so a blank guest password still lands as WPA-PSK."
+    },
+    {
+      "id": "wifi.power.get",
+      "path": "/goform/WifiPowerGet",
+      "method": "GET",
+      "purpose": "Transmit power level per band.",
+      "uiPage": "wifi_power.html",
+      "feature": "wifi.power",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "power",
+            "type": "string",
+            "values": [
+              "low",
+              "middle",
+              "high"
+            ]
+          },
+          {
+            "name": "power_5g",
+            "type": "string",
+            "values": [
+              "low",
+              "high"
+            ],
+            "notes": "'low' is labelled Medium on 5 GHz."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: power=high, power_5g=high."
+    },
+    {
+      "id": "wifi.power.set",
+      "path": "/goform/WifiPowerSet",
+      "method": "POST",
+      "purpose": "Set transmit power per band.",
+      "uiPage": "wifi_power.html",
+      "feature": "wifi.power",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "power",
+            "type": "string",
+            "values": [
+              "low",
+              "middle",
+              "high"
+            ]
+          },
+          {
+            "name": "power_5g",
+            "type": "string",
+            "values": [
+              "low",
+              "high"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting current values.",
+      "notes": "The router restarts the 2.4 GHz and guest radios on every save even when nothing changed; clients drop for ~4 s."
+    },
+    {
+      "id": "wifi.beamforming.get",
+      "path": "/goform/WifiBeamformingGet",
+      "method": "GET",
+      "purpose": "Beamforming+ on/off.",
+      "uiPage": "wifi_bf.html",
+      "feature": "wifi.beamforming",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "beamformingEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: beamformingEn=1."
+    },
+    {
+      "id": "wifi.beamforming.set",
+      "path": "/goform/WifiBeamformingSet",
+      "method": "POST",
+      "purpose": "Toggle Beamforming+.",
+      "uiPage": "wifi_bf.html",
+      "feature": "wifi.beamforming",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "beamformingEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting current values.",
+      "notes": "Applied asynchronously: the UI waits 2 s before re-reading. Restarts the 2.4 GHz radio."
+    },
+    {
+      "id": "wifi.schedule.get",
+      "path": "/goform/initSchedWifi",
+      "method": "GET",
+      "purpose": "WiFi on/off schedule plus the gating flags the page needs.",
+      "uiPage": "wifi_time.html",
+      "feature": "wifi.schedule",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wifiEn",
+            "type": "integer"
+          },
+          {
+            "name": "schedWifiEnable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "schedStartTime",
+            "type": "string"
+          },
+          {
+            "name": "schedEndTime",
+            "type": "string"
+          },
+          {
+            "name": "timeType",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "valueLabels": {
+              "0": "every day",
+              "1": "specified days"
+            }
+          },
+          {
+            "name": "day",
+            "type": "string",
+            "notes": "7 comma-separated flags, Monday first."
+          },
+          {
+            "name": "powerSaveTime",
+            "type": "string"
+          },
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "timeUp",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture; day='1,1,1,1,1,0,0' = Mon-Fri."
+    },
+    {
+      "id": "wifi.schedule.set",
+      "path": "/goform/openSchedWifi",
+      "method": "POST",
+      "purpose": "Save the WiFi off-schedule.",
+      "uiPage": "wifi_time.html",
+      "feature": "wifi.schedule",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "schedWifiEnable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "schedStartTime",
+            "type": "string"
+          },
+          {
+            "name": "schedEndTime",
+            "type": "string"
+          },
+          {
+            "name": "timeType",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "day",
+            "type": "string",
+            "notes": "Monday first, unlike parental control which is Sunday first."
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; the window turns WiFi off, so it was not enabled on a live unit.",
+      "notes": "Blocked by the firmware unless wl_mode is 'ap'."
+    },
+    {
+      "id": "wifi.wps.get",
+      "path": "/goform/WifiWpsGet",
+      "method": "GET",
+      "purpose": "WPS state, PIN and gating flags.",
+      "uiPage": "wifi_wps.html",
+      "feature": "wifi.wps",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wpsEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "pinCode",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "wl_en",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture; the PIN is a join credential and must be redacted."
+    },
+    {
+      "id": "wifi.wps.set",
+      "path": "/goform/WifiWpsSet",
+      "method": "POST",
+      "purpose": "Toggle WPS.",
+      "uiPage": "wifi_wps.html",
+      "feature": "wifi.wps",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "wpsEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting the current value."
+    },
+    {
+      "id": "wifi.wps.start",
+      "path": "/goform/WifiWpsStart",
+      "method": "POST",
+      "purpose": "Start a WPS push-button pairing window.",
+      "uiPage": "wifi_wps.html",
+      "feature": "wifi.wps",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "action",
+            "type": "string",
+            "values": [
+              "wps"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; opens a 2-minute window.",
+      "notes": "Any nearby device can join without the password while the window is open."
+    },
+    {
+      "id": "wifi.antijam.get",
+      "path": "/goform/WifiAntijamGet",
+      "method": "GET",
+      "purpose": "Anti-interference mode.",
+      "uiPage": "anti_interference.html",
+      "feature": "wifi.antijam",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "WifiAntijamEn",
+            "type": "string",
+            "values": [
+              "auto",
+              "true",
+              "false"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: WifiAntijamEn=auto."
+    },
+    {
+      "id": "wifi.antijam.set",
+      "path": "/goform/WifiAntijamSet",
+      "method": "POST",
+      "purpose": "Set anti-interference mode.",
+      "uiPage": "anti_interference.html",
+      "feature": "wifi.antijam",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "WifiAntijamEn",
+            "type": "string",
+            "values": [
+              "auto",
+              "true",
+              "false"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting the current value.",
+      "notes": "Auto lets the router change channel, which briefly drops clients. Restarts the 2.4 GHz radio on save."
+    },
+    {
+      "id": "wifi.repeating.get",
+      "path": "/goform/WifiExtraGet",
+      "method": "GET",
+      "purpose": "Wireless repeating (WISP / Client+AP) configuration.",
+      "uiPage": "wisp.html",
+      "feature": "wifi.repeating",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wl_mode",
+            "type": "string",
+            "values": [
+              "ap",
+              "wisp",
+              "apclient"
+            ]
+          },
+          {
+            "name": "wl_enable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wifi_chkHz",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "valueLabels": {
+              "0": "2.4 GHz",
+              "1": "5 GHz"
+            }
+          },
+          {
+            "name": "country_code",
+            "type": "string"
+          },
+          {
+            "name": "iptvEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "smartSaveEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "guestEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wpsEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wifiTimerEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "ssid",
+            "type": "string"
+          },
+          {
+            "name": "security",
+            "type": "string",
+            "values": [
+              "none",
+              "wpapsk"
+            ]
+          },
+          {
+            "name": "wpapsk_type",
+            "type": "string"
+          },
+          {
+            "name": "wpapsk_crypto",
+            "type": "string"
+          },
+          {
+            "name": "wpapsk_key",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "handset",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "valueLabels": {
+              "0": "from scan",
+              "1": "manual"
+            }
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture in ap mode; the upstream fields only appear once repeating is configured."
+    },
+    {
+      "id": "wifi.repeating.set",
+      "path": "/goform/WifiExtraSet",
+      "method": "POST",
+      "purpose": "Enable/disable repeating and set the upstream network.",
+      "uiPage": "wisp.html",
+      "feature": "wifi.repeating",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "wl_mode",
+            "type": "string",
+            "values": [
+              "ap",
+              "wisp",
+              "apclient"
+            ]
+          },
+          {
+            "name": "ssid",
+            "type": "string"
+          },
+          {
+            "name": "security",
+            "type": "string",
+            "values": [
+              "none",
+              "wpapsk"
+            ]
+          },
+          {
+            "name": "wpapsk_type",
+            "type": "string",
+            "values": [
+              "none",
+              "wpa",
+              "wpa2",
+              "wpa&wpa2"
+            ]
+          },
+          {
+            "name": "wpapsk_crypto",
+            "type": "string",
+            "values": [
+              "aes",
+              "tkip",
+              "tkip&aes"
+            ]
+          },
+          {
+            "name": "wpapsk_key",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wifi_chkHz",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "handset",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "high",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; mode changes reboot and can strand the unit without internet, so it was not written.",
+      "notes": "Any transition to or from 'ap' reboots the router. WEP upstreams are refused by the UI. Enabling repeating silently disables WPS, guest network, WiFi schedule and sleep mode."
+    },
+    {
+      "id": "wifi.scan",
+      "path": "/goform/WifiApScan",
+      "method": "GET",
+      "purpose": "Scan for upstream networks to repeat.",
+      "uiPage": "wisp.html",
+      "feature": "wifi.scan",
+      "response": {
+        "kind": "json-array",
+        "fields": [
+          {
+            "name": "ssid",
+            "type": "string"
+          },
+          {
+            "name": "security",
+            "type": "string",
+            "notes": "'none', 'wep' or '<type>/<crypto>' such as 'wpa2/aes'."
+          },
+          {
+            "name": "signal",
+            "type": "number",
+            "unit": "dBm, negative"
+          },
+          {
+            "name": "wifi_chkHz",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "mac",
+            "type": "string"
+          }
+        ],
+        "shapeUnverified": true
+      },
+      "risk": "safe",
+      "verified": "not-captured",
+      "evidence": "Shape inferred from js/wisp.js initScan/reCreateObj; no reply was captured.",
+      "notes": "May answer {\"errCode\":\"999\"} instead of an array when the scan fails."
+    },
+    {
+      "id": "wifi.apmode.get",
+      "path": "/goform/getApModeCfg",
+      "method": "GET",
+      "purpose": "Whether the unit runs as a plain access point instead of a router.",
+      "uiPage": "wifi_ap.html",
+      "feature": "apmode",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "apModeEn",
+            "type": "string",
+            "values": [
+              "true",
+              "false"
+            ],
+            "notes": "String literals, not 0/1."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: apModeEn=false."
+    },
+    {
+      "id": "wifi.apmode.set",
+      "path": "/goform/setApModeCfg",
+      "method": "POST",
+      "purpose": "Switch between router mode and pure AP (bridge) mode.",
+      "uiPage": "wifi_ap.html",
+      "feature": "apmode",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "apModeEn",
+            "type": "string",
+            "values": [
+              "true",
+              "false"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "high",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; the UI's own copy states the change needs a reboot.",
+      "notes": "Routing, WAN, VPN, parental control and port forwarding stop existing in AP mode, and the management name becomes tendawifi.com."
+    },
+    {
+      "id": "clients.online",
+      "path": "/goform/getOnlineList",
+      "method": "GET",
+      "purpose": "Currently online clients with per-device throughput and band.",
+      "uiPage": "online_list.html",
+      "feature": "clients.list",
+      "response": {
+        "kind": "json-array",
+        "arrayLayout": "Element 0 is a summary object (blackNum, macFilterType, localhostIP, localhostName, localhostMac). Elements 1.. are one object per device; a device row always carries devName.",
+        "fields": [
+          {
+            "name": "deviceId",
+            "type": "string",
+            "notes": "MAC address."
+          },
+          {
+            "name": "ip",
+            "type": "string"
+          },
+          {
+            "name": "devName",
+            "type": "string"
+          },
+          {
+            "name": "line",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2"
+            ],
+            "valueLabels": {
+              "0": "wired",
+              "1": "2.4 GHz",
+              "2": "5 GHz"
+            }
+          },
+          {
+            "name": "uploadSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          },
+          {
+            "name": "downloadSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          },
+          {
+            "name": "black",
+            "type": "integer",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "isGuestClient",
+            "type": "string",
+            "values": [
+              "true",
+              "false"
+            ]
+          },
+          {
+            "name": "linkType",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture, polled every 5 s. blackNum on this build was observed implausible (12492040) against an empty blacklist.",
+      "notes": "Blocked devices are absent from this list; read clients.blacklist.list to see them."
+    },
+    {
+      "id": "clients.blacklist.list",
+      "path": "/goform/getBlackRuleList",
+      "method": "GET",
+      "purpose": "Devices blocked through the quick blacklist.",
+      "uiPage": "online_list.html",
+      "feature": "clients.block",
+      "response": {
+        "kind": "json-array",
+        "fields": [
+          {
+            "name": "deviceId",
+            "type": "string",
+            "notes": "MAC, displayed uppercased."
+          },
+          {
+            "name": "devName",
+            "type": "string"
+          },
+          {
+            "name": "mac",
+            "type": "string",
+            "notes": "Some builds use mac instead of deviceId."
+          },
+          {
+            "name": "ip",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture; the app also reads a 'mac' key as a fallback because the field name differs between builds."
+    },
+    {
+      "id": "clients.block",
+      "path": "/goform/setBlackRule",
+      "method": "POST",
+      "purpose": "Block one device by MAC.",
+      "uiPage": "online_list.html",
+      "feature": "clients.block",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Verified live: device blocked, listed, then unblocked.",
+      "notes": "Disconnects that device immediately. errCode 1 means the blacklist is full (30 entries)."
+    },
+    {
+      "id": "clients.unblock",
+      "path": "/goform/delBlackRule",
+      "method": "POST",
+      "purpose": "Remove one device from the blacklist.",
+      "uiPage": "online_list.html",
+      "feature": "clients.block",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by adding and removing a dummy rule."
+    },
+    {
+      "id": "clients.rename",
+      "path": "/goform/SetOnlineDevName",
+      "method": "POST",
+      "purpose": "Rename a client in the router's device table.",
+      "uiPage": "online_list.html",
+      "feature": "clients.rename",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "devName",
+            "type": "string",
+            "maxLength": 20
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live; cosmetic only.",
+      "notes": "parental_control.html sends the name without URL-encoding, unlike the other three call sites."
+    },
+    {
+      "id": "clients.bandwidth.get",
+      "path": "/goform/GetNetControlList",
+      "method": "GET",
+      "purpose": "Per-device bandwidth caps and live throughput.",
+      "uiPage": "net_control.html",
+      "feature": "bandwidth",
+      "response": {
+        "kind": "json-array",
+        "arrayLayout": "Element 0 is {netControlEn}. Elements 1.. are one object per known device.",
+        "fields": [
+          {
+            "name": "netControlEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "ip",
+            "type": "string"
+          },
+          {
+            "name": "hostName",
+            "type": "string"
+          },
+          {
+            "name": "upSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          },
+          {
+            "name": "downSpeed",
+            "type": "string",
+            "unit": "KB/s"
+          },
+          {
+            "name": "limitUp",
+            "type": "string",
+            "unit": "KB/s, 0 = unlimited"
+          },
+          {
+            "name": "limitDown",
+            "type": "string",
+            "unit": "KB/s, 0 = unlimited"
+          },
+          {
+            "name": "isControled",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "offline",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "isSet",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture, repolled every 5 s."
+    },
+    {
+      "id": "clients.bandwidth.set",
+      "path": "/goform/SetNetControlList",
+      "method": "POST",
+      "purpose": "Replace per-device bandwidth caps.",
+      "uiPage": "net_control.html",
+      "feature": "bandwidth",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "list",
+            "type": "string"
+          }
+        ],
+        "listEncoding": {
+          "field": "list",
+          "rowSeparator": "\n",
+          "columnSeparator": "\r",
+          "columns": [
+            "devName",
+            "mac",
+            "limitUp",
+            "limitDown"
+          ],
+          "replaceWholeList": true
+        }
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live: a cap was set on one device, read back, then removed.",
+      "notes": "Limits are MB/s x128 (i.e. KB/s). 0 means unlimited."
+    },
+    {
+      "id": "clients.macfilter.get",
+      "path": "/goform/getMacFilterCfg",
+      "method": "GET",
+      "purpose": "MAC filter mode, both lists, and the online devices the UI offers to add.",
+      "uiPage": "mac_filter.html",
+      "feature": "macfilter",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "localhostIP",
+            "type": "string"
+          },
+          {
+            "name": "localhostName",
+            "type": "string"
+          },
+          {
+            "name": "localhostMac",
+            "type": "string"
+          },
+          {
+            "name": "macFilterType",
+            "type": "string",
+            "values": [
+              "black",
+              "white"
+            ]
+          },
+          {
+            "name": "blackList",
+            "type": "object[]"
+          },
+          {
+            "name": "blackList[].devName",
+            "type": "string"
+          },
+          {
+            "name": "blackList[].devMac",
+            "type": "string"
+          },
+          {
+            "name": "whiteList",
+            "type": "object[]"
+          },
+          {
+            "name": "whiteList[].devName",
+            "type": "string"
+          },
+          {
+            "name": "whiteList[].devMac",
+            "type": "string"
+          },
+          {
+            "name": "onlineList",
+            "type": "object[]"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture."
+    },
+    {
+      "id": "clients.macfilter.set",
+      "path": "/goform/setMacFilterCfg",
+      "method": "POST",
+      "purpose": "Set filter mode and replace the list for that mode.",
+      "uiPage": "mac_filter.html",
+      "feature": "macfilter",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "macFilterType",
+            "type": "string",
+            "values": [
+              "black",
+              "white"
+            ]
+          },
+          {
+            "name": "deviceList",
+            "type": "string"
+          }
+        ],
+        "listEncoding": {
+          "field": "deviceList",
+          "rowSeparator": "\n",
+          "columnSeparator": "\r",
+          "columns": [
+            "devName",
+            "mac"
+          ],
+          "replaceWholeList": true,
+          "maxRows": 30
+        }
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "high",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Verified live by adding a dummy row and removing it.",
+      "notes": "Whitelist mode cuts off every device not in the list, including future devices. This list is separate from clients.block's blacklist."
+    },
+    {
+      "id": "parental.list",
+      "path": "/goform/GetParentCtrlList",
+      "method": "GET",
+      "purpose": "Every known device with its parental-control state.",
+      "uiPage": "main.html",
+      "feature": "parental",
+      "response": {
+        "kind": "json-array",
+        "fields": [
+          {
+            "name": "deviceId",
+            "type": "string",
+            "notes": "MAC, the key for every parental write."
+          },
+          {
+            "name": "devName",
+            "type": "string"
+          },
+          {
+            "name": "devType",
+            "type": "string"
+          },
+          {
+            "name": "ip",
+            "type": "string"
+          },
+          {
+            "name": "line",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "onlineTime",
+            "type": "integer",
+            "unit": "seconds"
+          },
+          {
+            "name": "isSet",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "isControled",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "block",
+            "type": "integer"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture, polled every 5 s. Rows with block=1 are skipped by the UI."
+    },
+    {
+      "id": "parental.info",
+      "path": "/goform/GetParentControlInfo",
+      "method": "GET",
+      "purpose": "The rule for one device, keyed by MAC in the query string.",
+      "uiPage": "parental_control.html",
+      "feature": "parental",
+      "request": {
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string",
+            "notes": "Lowercase MAC in the query string; the page also sends a random cache-buster."
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "enable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "url_enable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "urls",
+            "type": "string"
+          },
+          {
+            "name": "time",
+            "type": "string",
+            "notes": "HH:MM-HH:MM, the window in which access is ALLOWED."
+          },
+          {
+            "name": "day",
+            "type": "string",
+            "notes": "7 flags, Sunday first."
+          },
+          {
+            "name": "limit_type",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "valueLabels": {
+              "0": "blacklist",
+              "1": "whitelist"
+            }
+          }
+        ],
+        "shapeUnverified": true
+      },
+      "risk": "safe",
+      "verified": "not-captured",
+      "evidence": "A device with no rule answers only {\"mac\":\"...\"}; the populated shape is inferred from initParentControl().",
+      "notes": "Treat a reply without 'enable' as 'no rule configured', not as an error."
+    },
+    {
+      "id": "parental.save",
+      "path": "/goform/saveParentControlInfo",
+      "method": "POST",
+      "purpose": "Create, update or disable one device's parental rule.",
+      "uiPage": "parental_control.html",
+      "feature": "parental",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "deviceId",
+            "type": "string",
+            "notes": "Lowercase MAC."
+          },
+          {
+            "name": "deviceName",
+            "type": "string"
+          },
+          {
+            "name": "enable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "time",
+            "type": "string"
+          },
+          {
+            "name": "url_enable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "urls",
+            "type": "string",
+            "notes": "Comma-separated keywords, max 10."
+          },
+          {
+            "name": "day",
+            "type": "string",
+            "notes": "Sunday first."
+          },
+          {
+            "name": "limit_type",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live: rule added, then deleted.",
+      "notes": "Disabling sends only deviceId and enable=0. errCode 1 means the 30-rule cap is hit."
+    },
+    {
+      "id": "parental.enable",
+      "path": "/goform/parentControlEn",
+      "method": "POST",
+      "purpose": "Toggle an existing rule on or off.",
+      "uiPage": "main.html",
+      "feature": "parental",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "isControled",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "text"
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; the UI never reads a reply.",
+      "notes": "Fire-and-forget: no body is parsed, so the client must re-read parental.list to know the result."
+    },
+    {
+      "id": "parental.delete",
+      "path": "/goform/delParentalRule",
+      "method": "POST",
+      "purpose": "Delete a device's parental rule.",
+      "uiPage": "main.html",
+      "feature": "parental",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "mac",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by adding and removing a rule."
+    },
+    {
+      "id": "parental.rules",
+      "path": "/goform/getParentalRuleList",
+      "method": "GET",
+      "purpose": "Summary list of devices that have a parental rule.",
+      "uiPage": "parental_control.html",
+      "feature": "parental",
+      "response": {
+        "kind": "json-array",
+        "fields": [
+          {
+            "name": "devName",
+            "type": "string"
+          },
+          {
+            "name": "mac",
+            "type": "string"
+          },
+          {
+            "name": "enable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture."
+    },
+    {
+      "id": "nat.portforward.get",
+      "path": "/goform/GetVirtualServerCfg",
+      "method": "GET",
+      "purpose": "Port-forwarding rules.",
+      "uiPage": "virtual_server.html",
+      "feature": "portforward",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          },
+          {
+            "name": "virtualList",
+            "type": "object[]"
+          },
+          {
+            "name": "virtualList[].ip",
+            "type": "string"
+          },
+          {
+            "name": "virtualList[].inPort",
+            "type": "string"
+          },
+          {
+            "name": "virtualList[].outPort",
+            "type": "string"
+          },
+          {
+            "name": "virtualList[].protocol",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2"
+            ],
+            "valueLabels": {
+              "0": "tcp+udp",
+              "1": "tcp",
+              "2": "udp"
+            }
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture."
+    },
+    {
+      "id": "nat.portforward.set",
+      "path": "/goform/SetVirtualServerCfg",
+      "method": "POST",
+      "purpose": "Replace the whole port-forwarding table.",
+      "uiPage": "virtual_server.html",
+      "feature": "portforward",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "list",
+            "type": "string"
+          }
+        ],
+        "listEncoding": {
+          "field": "list",
+          "rowSeparator": "~",
+          "columnSeparator": ",",
+          "columns": [
+            "ip",
+            "inPort",
+            "outPort",
+            "protocol"
+          ],
+          "replaceWholeList": true,
+          "maxRows": 16
+        }
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live: dummy rule added, read back, removed.",
+      "notes": "inPort is the LAN port, outPort the WAN port. Duplicate outPort values are refused by the UI."
+    },
+    {
+      "id": "nat.dmz.get",
+      "path": "/goform/GetDMZCfg",
+      "method": "GET",
+      "purpose": "DMZ host configuration.",
+      "uiPage": "dmz.html",
+      "feature": "dmz",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          },
+          {
+            "name": "dmzEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "dmzIp",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture."
+    },
+    {
+      "id": "nat.dmz.set",
+      "path": "/goform/SetDMZCfg",
+      "method": "POST",
+      "purpose": "Enable/disable the DMZ and choose its host.",
+      "uiPage": "dmz.html",
+      "feature": "dmz",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "dmzEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "dmzIp",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting current values.",
+      "notes": "errCode 2 means the DMZ host equals the LAN address. The host is fully exposed to inbound WAN traffic."
+    },
+    {
+      "id": "nat.upnp.get",
+      "path": "/goform/GetUpnpCfg",
+      "method": "GET",
+      "purpose": "UPnP state and the mappings devices opened.",
+      "uiPage": "upnp_config.html",
+      "feature": "upnp",
+      "response": {
+        "kind": "json-array",
+        "arrayLayout": "Element 0 is {upnpEn}; later elements are live mappings.",
+        "fields": [
+          {
+            "name": "upnpEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "remoteHost",
+            "type": "string"
+          },
+          {
+            "name": "outPort",
+            "type": "string"
+          },
+          {
+            "name": "host",
+            "type": "string"
+          },
+          {
+            "name": "inPort",
+            "type": "string"
+          },
+          {
+            "name": "protocol",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: [{\"upnpEn\":\"1\"}] with no active mappings."
+    },
+    {
+      "id": "nat.upnp.set",
+      "path": "/goform/SetUpnpCfg",
+      "method": "POST",
+      "purpose": "Enable/disable UPnP.",
+      "uiPage": "upnp_config.html",
+      "feature": "upnp",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "upnpEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting the current value."
+    },
+    {
+      "id": "nat.staticroute.get",
+      "path": "/goform/GetStaticRouteCfg",
+      "method": "GET",
+      "purpose": "System and user static routes.",
+      "uiPage": "static_route.html",
+      "feature": "staticroute",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          },
+          {
+            "name": "wanMask",
+            "type": "string"
+          },
+          {
+            "name": "wanGateway",
+            "type": "string"
+          },
+          {
+            "name": "routeList",
+            "type": "object[]"
+          },
+          {
+            "name": "routeList[].network",
+            "type": "string"
+          },
+          {
+            "name": "routeList[].mask",
+            "type": "string"
+          },
+          {
+            "name": "routeList[].gateway",
+            "type": "string"
+          },
+          {
+            "name": "routeList[].ifname",
+            "type": "string"
+          },
+          {
+            "name": "routeList[].operateType",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "valueLabels": {
+              "0": "system",
+              "1": "user"
+            }
+          },
+          {
+            "name": "routeList[].effective",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture."
+    },
+    {
+      "id": "nat.staticroute.set",
+      "path": "/goform/SetStaticRouteCfg",
+      "method": "POST",
+      "purpose": "Replace the user static routes.",
+      "uiPage": "static_route.html",
+      "feature": "staticroute",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "list",
+            "type": "string"
+          }
+        ],
+        "listEncoding": {
+          "field": "list",
+          "rowSeparator": "~",
+          "columnSeparator": ",",
+          "columns": [
+            "network",
+            "mask",
+            "gateway",
+            "ifname"
+          ],
+          "replaceWholeList": true,
+          "maxRows": 10
+        }
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Verified live: dummy route added, read back, removed.",
+      "notes": "Only rows with operateType=1 may be sent; system routes are never part of the payload."
+    },
+    {
+      "id": "nat.ddns.get",
+      "path": "/goform/GetDDNSCfg",
+      "method": "GET",
+      "purpose": "Dynamic DNS configuration and registration status.",
+      "uiPage": "ddns_config.html",
+      "feature": "ddns",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "ddnsEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "serverName",
+            "type": "string",
+            "values": [
+              "no-ip.com",
+              "dyn.com/dns/",
+              "88ip.cn",
+              "oray.com"
+            ],
+            "valueLabels": {
+              "dyn.com/dns/": "dyndns.org"
+            }
+          },
+          {
+            "name": "ddnsUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "ddnsPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "ddnsDomain",
+            "type": "string"
+          },
+          {
+            "name": "ddnsStatus",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "valueLabels": {
+              "0": "disconnected",
+              "1": "connected"
+            }
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture."
+    },
+    {
+      "id": "nat.ddns.set",
+      "path": "/goform/SetDDNSCfg",
+      "method": "POST",
+      "purpose": "Save DDNS settings.",
+      "uiPage": "ddns_config.html",
+      "feature": "ddns",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "ddnsEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "serverName",
+            "type": "string"
+          },
+          {
+            "name": "ddnsUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "ddnsPwd",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "ddnsDomain",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live with the feature disabled."
+    },
+    {
+      "id": "nat.iptv.get",
+      "path": "/goform/GetIPTVCfg",
+      "method": "GET",
+      "purpose": "IPTV multicast, STB port and VLAN configuration.",
+      "uiPage": "iptv.html",
+      "feature": "iptv",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "stbEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "igmpEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "iptvType",
+            "type": "string",
+            "values": [
+              "none",
+              "shanghai",
+              "manual"
+            ]
+          },
+          {
+            "name": "vlanId",
+            "type": "string"
+          },
+          {
+            "name": "list",
+            "type": "string",
+            "notes": "Comma-separated custom VLAN IDs."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture; the page refuses to edit unless wl_mode is 'ap'."
+    },
+    {
+      "id": "nat.iptv.set",
+      "path": "/goform/SetIPTVCfg",
+      "method": "POST",
+      "purpose": "Save IPTV settings; the UI then reboots the router.",
+      "uiPage": "iptv.html",
+      "feature": "iptv",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "stbEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "igmpEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "iptvType",
+            "type": "string",
+            "values": [
+              "none",
+              "shanghai",
+              "manual"
+            ]
+          },
+          {
+            "name": "vlanId",
+            "type": "string"
+          },
+          {
+            "name": "list",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "high",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; the page pairs it with an immediate reboot.",
+      "notes": "The vendor UI issues system.reboot automatically when stbEn, iptvType, vlanId or list changed."
+    },
+    {
+      "id": "firewall.get",
+      "path": "/goform/GetFirewallCfg",
+      "method": "GET",
+      "purpose": "Four flood/ping defences encoded as one 4-character string.",
+      "uiPage": "firewall.html",
+      "feature": "firewall",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "firewallEn",
+            "type": "string",
+            "notes": "Position 1 ICMP flood, 2 TCP flood, 3 UDP flood, 4 ignore WAN ping; '1' = enabled."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture."
+    },
+    {
+      "id": "firewall.set",
+      "path": "/goform/SetFirewallCfg",
+      "method": "POST",
+      "purpose": "Set the four defences.",
+      "uiPage": "firewall.html",
+      "feature": "firewall",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "firewallEn",
+            "type": "string",
+            "notes": "4 characters in the same order as the read."
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting current values."
+    },
+    {
+      "id": "remote.get",
+      "path": "/goform/GetRemoteWebCfg",
+      "method": "GET",
+      "purpose": "WAN-side web administration configuration.",
+      "uiPage": "remote_web.html",
+      "feature": "remoteadmin",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "syspwdflag",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "notes": "0 means no admin password is set and remote admin must be refused."
+          },
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          },
+          {
+            "name": "wlGuestIp",
+            "type": "string"
+          },
+          {
+            "name": "remoteWebEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "remoteIp",
+            "type": "string",
+            "notes": "'0.0.0.0' = any source."
+          },
+          {
+            "name": "remotePort",
+            "type": "integer"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-roundtrip",
+      "evidence": "Live capture, and the same shape was confirmed on a third AC10 build."
+    },
+    {
+      "id": "remote.set",
+      "path": "/goform/SetRemoteWebCfg",
+      "method": "POST",
+      "purpose": "Enable/disable WAN-side web administration.",
+      "uiPage": "remote_web.html",
+      "feature": "remoteadmin",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "remoteWebEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "remoteIp",
+            "type": "string"
+          },
+          {
+            "name": "remotePort",
+            "type": "integer"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Written and read back on an AC10 V3.0; errCode 0 and the GET reflected the new port.",
+      "notes": "Exposes the admin UI to the internet. remoteIp 0.0.0.0 allows every source address."
+    },
+    {
+      "id": "vpn.server.get",
+      "path": "/goform/GetPptpServerCfg",
+      "method": "GET",
+      "purpose": "PPTP server config, IP pool and user accounts.",
+      "uiPage": "pptp_server.html",
+      "feature": "vpn.server",
+      "response": {
+        "kind": "json-array",
+        "arrayLayout": "Element 0 is the server config; later elements are one object per account.",
+        "fields": [
+          {
+            "name": "serverEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wanid",
+            "type": "string"
+          },
+          {
+            "name": "mppe",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "mppeOp",
+            "type": "string",
+            "values": [
+              "40",
+              "128"
+            ]
+          },
+          {
+            "name": "startIp",
+            "type": "string"
+          },
+          {
+            "name": "endIp",
+            "type": "string"
+          },
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          },
+          {
+            "name": "guestIp",
+            "type": "string"
+          },
+          {
+            "name": "guestMask",
+            "type": "string"
+          },
+          {
+            "name": "serverIp",
+            "type": "string"
+          },
+          {
+            "name": "vlan2Ip",
+            "type": "string"
+          },
+          {
+            "name": "vlan2Mask",
+            "type": "string"
+          },
+          {
+            "name": "wanIp",
+            "type": "string"
+          },
+          {
+            "name": "wanMask",
+            "type": "string"
+          },
+          {
+            "name": "pptpSvrIp",
+            "type": "string"
+          },
+          {
+            "name": "pptpSvrMask",
+            "type": "string"
+          },
+          {
+            "name": "userName",
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "enable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "connsta",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture with the server off and no users configured."
+    },
+    {
+      "id": "vpn.server.set",
+      "path": "/goform/SetPptpServerCfg",
+      "method": "POST",
+      "purpose": "Save PPTP server pool and MPPE settings.",
+      "uiPage": "pptp_server.html",
+      "feature": "vpn.server",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "serverEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "startIp",
+            "type": "string"
+          },
+          {
+            "name": "endIp",
+            "type": "string"
+          },
+          {
+            "name": "mppe",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "mppeOp",
+            "type": "string",
+            "values": [
+              "40",
+              "128"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting the disabled state.",
+      "notes": "Does not touch the user list; that is a separate call. The pool must be at least 8 addresses and must not overlap LAN, WAN, guest or VLAN2."
+    },
+    {
+      "id": "vpn.server.users.set",
+      "path": "/goform/setPptpUserList",
+      "method": "POST",
+      "purpose": "Add, enable, disable or delete a PPTP account by resubmitting the whole table.",
+      "uiPage": "pptp_server.html",
+      "feature": "vpn.server",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "list",
+            "type": "string"
+          }
+        ],
+        "listEncoding": {
+          "field": "list",
+          "rowSeparator": "~",
+          "columnSeparator": ";",
+          "columns": [
+            "userName",
+            "password",
+            "enable",
+            "netEn",
+            "serverIp",
+            "serverMask",
+            "remark"
+          ],
+          "replaceWholeList": true,
+          "maxRows": 8
+        }
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; no user was created on the live unit.",
+      "notes": "Deleting or disabling an account terminates that user's session. The client always sends netEn=0 with empty serverIp/serverMask/remark."
+    },
+    {
+      "id": "vpn.server.online",
+      "path": "/goform/getPptpOnlineClient",
+      "method": "GET",
+      "purpose": "Currently connected PPTP clients.",
+      "uiPage": "pptp_user.html",
+      "feature": "vpn.server",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "clientList",
+            "type": "object[]"
+          },
+          {
+            "name": "clientList[].username",
+            "type": "string"
+          },
+          {
+            "name": "clientList[].dialIP",
+            "type": "string"
+          },
+          {
+            "name": "clientList[].clientIP",
+            "type": "string"
+          },
+          {
+            "name": "clientList[].onlineTime",
+            "type": "integer",
+            "unit": "seconds"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"clientList\":[]}."
+    },
+    {
+      "id": "vpn.client.get",
+      "path": "/goform/GetPptpClientCfg",
+      "method": "GET",
+      "purpose": "PPTP/L2TP client configuration and tunnel state.",
+      "uiPage": "pptp_client.html",
+      "feature": "vpn.client",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "clientEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "clientType",
+            "type": "string",
+            "values": [
+              "pptp",
+              "l2tp"
+            ]
+          },
+          {
+            "name": "clientMppe",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "clientMppeOp",
+            "type": "string",
+            "values": [
+              "40",
+              "128"
+            ]
+          },
+          {
+            "name": "clientWanid",
+            "type": "string"
+          },
+          {
+            "name": "domain",
+            "type": "string"
+          },
+          {
+            "name": "userName",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "pptpStatus",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2"
+            ],
+            "valueLabels": {
+              "0": "disconnected",
+              "1": "connected",
+              "2": "connecting"
+            }
+          },
+          {
+            "name": "pptpIp",
+            "type": "string"
+          },
+          {
+            "name": "l2tpStatus",
+            "type": "string",
+            "values": [
+              "0",
+              "1",
+              "2"
+            ]
+          },
+          {
+            "name": "l2tpIp",
+            "type": "string"
+          },
+          {
+            "name": "wanConnType",
+            "type": "string"
+          },
+          {
+            "name": "wanUser",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "wanIp",
+            "type": "string"
+          },
+          {
+            "name": "clientIp",
+            "type": "string"
+          },
+          {
+            "name": "clientMask",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture with the client disabled."
+    },
+    {
+      "id": "vpn.client.set",
+      "path": "/goform/SetPptpClientCfg",
+      "method": "POST",
+      "purpose": "Enable/disable and configure the PPTP/L2TP client.",
+      "uiPage": "pptp_client.html",
+      "feature": "vpn.client",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "clientEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "clientType",
+            "type": "string",
+            "values": [
+              "pptp",
+              "l2tp"
+            ]
+          },
+          {
+            "name": "clientMppe",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "clientMppeOp",
+            "type": "string",
+            "values": [
+              "40",
+              "128"
+            ]
+          },
+          {
+            "name": "domain",
+            "type": "string"
+          },
+          {
+            "name": "userName",
+            "type": "string",
+            "secret": true
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "secret": true
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting the disabled state.",
+      "notes": "Disabling re-sends the stored credentials unchanged; it does not clear them. For l2tp the MPPE fields must be echoed from the last read."
+    },
+    {
+      "id": "cloud.wanStatus",
+      "path": "/goform/cloudv2?module=wansta&opt=query",
+      "method": "GET",
+      "purpose": "Whether the router has internet, used as a precondition for every cloud call.",
+      "uiPage": "system_upgrade.html",
+      "feature": "cloud",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "wan_sta",
+            "type": "integer",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"wan_sta\":1}."
+    },
+    {
+      "id": "cloud.manage.basic",
+      "path": "/goform/cloudv2?module=manage&opt=querybasic",
+      "method": "GET",
+      "purpose": "Whether cloud (Tenda App) management is on, and the binding serial number.",
+      "uiPage": "cloud_managment.html",
+      "feature": "cloud",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "err_code",
+            "type": "integer"
+          },
+          {
+            "name": "enable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "sn",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"err_code\":0,\"enable\":0,\"sn\":\"<sn>\"}."
+    },
+    {
+      "id": "cloud.manage.account",
+      "path": "/goform/cloudv2?module=manage&opt=queryaccount",
+      "method": "GET",
+      "purpose": "The Tenda account bound for app-based management.",
+      "uiPage": "cloud_managment.html",
+      "feature": "cloud",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "err_code",
+            "type": "integer"
+          },
+          {
+            "name": "list",
+            "type": "string",
+            "notes": "Bound email or phone; empty when nothing is bound."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"err_code\":0,\"list\":\"\"}."
+    },
+    {
+      "id": "cloud.manage.setBasic",
+      "path": "/goform/cloudv2?module=manage&opt=setbasic",
+      "method": "POST",
+      "purpose": "Turn app-based cloud management on or off.",
+      "uiPage": "cloud_managment.html",
+      "feature": "cloud",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "enable",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "err_code",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; not toggled on the live unit.",
+      "notes": "The reply is a JSON-encoded string, so parse twice. Turning this on hands remote control of the router to a cloud account."
+    },
+    {
+      "id": "cloud.manage.setAccount",
+      "path": "/goform/cloudv2?module=manage&opt=setaccount",
+      "method": "POST",
+      "purpose": "Bind a Tenda account for remote management.",
+      "uiPage": "cloud_managment.html",
+      "feature": "cloud",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "list",
+            "type": "string",
+            "notes": "Email, or a Chinese mobile number in the cn locale."
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "err_code",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "verified": "live-capture",
+      "evidence": "Documented from ui code."
+    },
+    {
+      "id": "cloud.upgrade.version",
+      "path": "/goform/cloudv2?module=olupgrade&opt=queryversion",
+      "method": "GET",
+      "purpose": "Ask the vendor cloud whether newer firmware exists.",
+      "uiPage": "system_upgrade.html",
+      "feature": "firmware.upgrade",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "ver_info",
+            "type": "object"
+          },
+          {
+            "name": "ver_info.err_code",
+            "type": "integer"
+          },
+          {
+            "name": "ver_info.resp_type",
+            "type": "integer",
+            "values": [
+              "0",
+              "1"
+            ],
+            "valueLabels": {
+              "0": "update available",
+              "1": "up to date"
+            }
+          },
+          {
+            "name": "ver_info.detail.newest_ver",
+            "type": "string"
+          },
+          {
+            "name": "ver_info.detail.update_date",
+            "type": "string"
+          },
+          {
+            "name": "ver_info.detail.description",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: resp_type 1. err_code 19 means 'connecting, retry'."
+    },
+    {
+      "id": "cloud.upgrade.start",
+      "path": "/goform/cloudv2?module=olupgrade&opt=queryupgrade",
+      "method": "GET",
+      "purpose": "Start and poll the cloud firmware download and flash.",
+      "uiPage": "system_upgrade.html",
+      "feature": "firmware.upgrade",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "up_info",
+            "type": "object"
+          },
+          {
+            "name": "up_info.err_code",
+            "type": "integer"
+          },
+          {
+            "name": "up_info.resp_type",
+            "type": "integer",
+            "values": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4"
+            ],
+            "valueLabels": {
+              "0": "preparing",
+              "1": "out of memory",
+              "2": "queued",
+              "3": "downloading",
+              "4": "flashing"
+            }
+          },
+          {
+            "name": "up_info.detail.pos",
+            "type": "integer"
+          },
+          {
+            "name": "up_info.detail.time",
+            "type": "integer"
+          },
+          {
+            "name": "up_info.detail.recved",
+            "type": "integer"
+          },
+          {
+            "name": "up_info.detail.fw_size",
+            "type": "integer"
+          },
+          {
+            "name": "up_info.detail.sec_left",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "destructive",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Live: {\"up_info\":{\"err_code\":19}} while idle. State machine decoded from js/directupgrade.js.",
+      "notes": "A GET with side effects: the first call starts the upgrade. Polling afterwards is safe, calling it cold is not."
+    },
+    {
+      "id": "cloud.upgrade.dismiss",
+      "path": "/goform/setNotUpgrade",
+      "method": "POST",
+      "purpose": "Record that the user declined a firmware version so it stops being offered.",
+      "uiPage": "system_upgrade.html",
+      "feature": "firmware.upgrade",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "action",
+            "type": "string",
+            "values": [
+              "1"
+            ]
+          },
+          {
+            "name": "newVersion",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "text"
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; the caller ignores the reply."
+    },
+    {
+      "id": "system.time.get",
+      "path": "/goform/GetSysTimeCfg",
+      "method": "GET",
+      "purpose": "Time zone, NTP server and sync state.",
+      "uiPage": "system_time.html",
+      "feature": "time",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "timeType",
+            "type": "string",
+            "values": [
+              "sync"
+            ]
+          },
+          {
+            "name": "timeZone",
+            "type": "string",
+            "notes": "GMT offset plus 12 hours, e.g. '14:00' = GMT+02:00."
+          },
+          {
+            "name": "timePeriod",
+            "type": "string",
+            "unit": "seconds"
+          },
+          {
+            "name": "ntpServer",
+            "type": "string"
+          },
+          {
+            "name": "time",
+            "type": "string"
+          },
+          {
+            "name": "isSyncInternetTime",
+            "type": "string",
+            "values": [
+              "true",
+              "false"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"timeType\":\"sync\",\"timeZone\":\"14:00\",\"timePeriod\":\"86400\",\"ntpServer\":\"time.windows.com\",...}"
+    },
+    {
+      "id": "system.time.set",
+      "path": "/goform/SetSysTimeCfg",
+      "method": "POST",
+      "purpose": "Save the time zone.",
+      "uiPage": "system_time.html",
+      "feature": "time",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "timePeriod",
+            "type": "integer"
+          },
+          {
+            "name": "ntpServer",
+            "type": "string"
+          },
+          {
+            "name": "timeZone",
+            "type": "string"
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting current values.",
+      "notes": "Only timeZone is user-editable; echo timePeriod and ntpServer from the read."
+    },
+    {
+      "id": "system.autoReboot.set",
+      "path": "/goform/SetSysAutoRebbotCfg",
+      "method": "POST",
+      "purpose": "Schedule a recurring reboot.",
+      "uiPage": "system_automaintain.html",
+      "feature": "autoReboot",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "autoRebootEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "delayRebootEn",
+            "type": "string",
+            "values": [
+              "true",
+              "false"
+            ]
+          },
+          {
+            "name": "rebootTime",
+            "type": "string",
+            "notes": "HH:MM, minutes in 5-minute steps."
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting current values."
+    },
+    {
+      "id": "system.password.state",
+      "path": "/goform/SysToolpassword",
+      "method": "GET",
+      "purpose": "Whether an admin password exists and whether remote admin is on.",
+      "uiPage": "system_password.html",
+      "feature": "password",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "ispwd",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "remoteEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: {\"ispwd\":1,\"remoteEn\":0}."
+    },
+    {
+      "id": "system.password.set",
+      "path": "/goform/SysToolChangePwd",
+      "method": "POST",
+      "purpose": "Change the admin password.",
+      "uiPage": "system_password.html",
+      "feature": "password",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "GO",
+            "type": "string",
+            "values": [
+              "system_password.html"
+            ]
+          },
+          {
+            "name": "SYSOPS",
+            "type": "string",
+            "secret": true,
+            "notes": "Old password as MD5 hex, or empty when none is set."
+          },
+          {
+            "name": "SYSPS",
+            "type": "string",
+            "secret": true,
+            "notes": "New password as MD5 hex."
+          },
+          {
+            "name": "SYSPS2",
+            "type": "string",
+            "secret": true,
+            "notes": "Confirmation as MD5 hex."
+          }
+        ]
+      },
+      "response": {
+        "kind": "redirect"
+      },
+      "writes": true,
+      "risk": "medium",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; the page is a native form submit, not AJAX.",
+      "notes": "Answers with a redirect, not JSON; ?1 on the redirect target means wrong old password. Changing it invalidates the current session."
+    },
+    {
+      "id": "system.reboot",
+      "path": "/goform/SysToolReboot",
+      "method": "POST",
+      "purpose": "Reboot the router.",
+      "uiPage": "system_reboot.html",
+      "feature": "reboot",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "action",
+            "type": "string",
+            "values": [
+              "0"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "redirect"
+      },
+      "writes": true,
+      "risk": "destructive",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Live: the app calls it and treats a dropped connection as success; the UI form posts action=0.",
+      "notes": "A plain GET also reboots on this firmware, so a client must never probe it. Expect ~45 s of outage."
+    },
+    {
+      "id": "system.factoryReset",
+      "path": "/goform/SysToolRestoreSet",
+      "method": "POST",
+      "purpose": "Restore factory defaults.",
+      "uiPage": "system_reboot.html",
+      "feature": "factoryreset",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "action",
+            "type": "string",
+            "values": [
+              "0"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "redirect"
+      },
+      "writes": true,
+      "risk": "destructive",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; never called on hardware.",
+      "notes": "Wipes WiFi, WAN credentials, port forwarding and every other setting, then reboots."
+    },
+    {
+      "id": "system.backup",
+      "path": "/cgi-bin/DownloadCfg/RouterCfm.cfg",
+      "method": "GET",
+      "purpose": "Download the full configuration archive.",
+      "uiPage": "system_backup.html",
+      "feature": "backup",
+      "response": {
+        "kind": "binary"
+      },
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; a plain browser navigation.",
+      "notes": "The file itself embeds WiFi keys and WAN/VPN credentials and must be treated as a secret."
+    },
+    {
+      "id": "system.restore",
+      "path": "/cgi-bin/UploadCfg",
+      "method": "POST",
+      "purpose": "Restore a configuration archive.",
+      "uiPage": "system_backup.html",
+      "feature": "backup",
+      "request": {
+        "bodyEncoding": "multipart",
+        "fields": [
+          {
+            "name": "filename",
+            "type": "string",
+            "notes": "A .cfg file."
+          }
+        ]
+      },
+      "response": {
+        "kind": "redirect"
+      },
+      "writes": true,
+      "risk": "destructive",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; a native multipart form submit.",
+      "notes": "Replaces the running configuration wholesale and reboots. Failure redirects to system_backup.html?1."
+    },
+    {
+      "id": "system.upgradeLocal",
+      "path": "/cgi-bin/upgrade",
+      "method": "POST",
+      "purpose": "Flash a firmware image uploaded from the client.",
+      "uiPage": "system_upgrade.html",
+      "feature": "firmware.upgrade",
+      "request": {
+        "bodyEncoding": "multipart",
+        "fields": [
+          {
+            "name": "action",
+            "type": "string",
+            "values": [
+              "0"
+            ]
+          },
+          {
+            "name": "upgradeFile",
+            "type": "string",
+            "notes": "The firmware .bin, not the .zip."
+          }
+        ]
+      },
+      "response": {
+        "kind": "redirect"
+      },
+      "writes": true,
+      "risk": "destructive",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; failure codes 1001-1005 decoded from directupgrade.js.",
+      "notes": "A mismatched image bricks the unit. The vendor publishes a different image per hardware revision."
+    },
+    {
+      "id": "system.logs",
+      "path": "/goform/GetSySLogCfg",
+      "method": "GET",
+      "purpose": "System event log.",
+      "uiPage": "system_log.html",
+      "feature": "logs",
+      "response": {
+        "kind": "json-array",
+        "fields": [
+          {
+            "name": "index",
+            "type": "integer"
+          },
+          {
+            "name": "time",
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "values": [
+              "system",
+              "wan"
+            ]
+          },
+          {
+            "name": "log",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture: 219 entries. Timestamps starting 2000- mean the clock never synced."
+    },
+    {
+      "id": "system.logs.export",
+      "path": "/cgi-bin/DownloadLog/syslog.tar",
+      "method": "GET",
+      "purpose": "Download the log archive.",
+      "uiPage": "system_log.html",
+      "feature": "logs",
+      "response": {
+        "kind": "binary"
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; a plain navigation."
+    },
+    {
+      "id": "system.led.get",
+      "path": "/goform/GetLEDCfg",
+      "method": "GET",
+      "purpose": "LED indicator mode and schedule.",
+      "uiPage": "system_led.html",
+      "feature": "led",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "ledType",
+            "type": "string",
+            "values": [
+              "open",
+              "close",
+              "time"
+            ]
+          },
+          {
+            "name": "time",
+            "type": "string"
+          },
+          {
+            "name": "ledCloseType",
+            "type": "string",
+            "values": [
+              "allClose",
+              "unpowerClose"
+            ]
+          },
+          {
+            "name": "powerSaveTime",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live: ledType=close."
+    },
+    {
+      "id": "system.led.set",
+      "path": "/goform/SetLEDCfg",
+      "method": "POST",
+      "purpose": "Set the LED mode and schedule.",
+      "uiPage": "system_led.html",
+      "feature": "led",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "ledType",
+            "type": "string",
+            "values": [
+              "open",
+              "close",
+              "time"
+            ]
+          },
+          {
+            "name": "time",
+            "type": "string"
+          },
+          {
+            "name": "ledCloseType",
+            "type": "string",
+            "values": [
+              "allClose",
+              "unpowerClose"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "low",
+      "verified": "live-capture",
+      "evidence": "Verified live: LED mode round-tripped."
+    },
+    {
+      "id": "system.sleep.get",
+      "path": "/goform/PowerSaveGet",
+      "method": "GET",
+      "purpose": "Sleeping Mode schedule.",
+      "uiPage": "sleep_mode.html",
+      "feature": "sleep",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "powerSavingEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "powerSaveDelay",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "time",
+            "type": "string"
+          },
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "ledTime",
+            "type": "string"
+          },
+          {
+            "name": "wifiTime",
+            "type": "string"
+          },
+          {
+            "name": "ledCloseType",
+            "type": "string"
+          },
+          {
+            "name": "timeUp",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Live capture."
+    },
+    {
+      "id": "system.sleep.set",
+      "path": "/goform/PowerSaveSet",
+      "method": "POST",
+      "purpose": "Save the Sleeping Mode schedule.",
+      "uiPage": "sleep_mode.html",
+      "feature": "sleep",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "powerSavingEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "time",
+            "type": "string"
+          },
+          {
+            "name": "ledCloseType",
+            "type": "string",
+            "values": [
+              "allClose",
+              "unpowerClose"
+            ]
+          },
+          {
+            "name": "powerSaveDelay",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "requiresConfirmation": true,
+      "verified": "live-capture",
+      "evidence": "Verified live by resubmitting current values.",
+      "notes": "Turns WiFi (and LEDs, and USB on models that have it) off during the window. Blocked unless wl_mode is 'ap'."
+    },
+    {
+      "id": "system.exit",
+      "path": "/goform/exit",
+      "method": "GET",
+      "purpose": "Log out of the web session.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "html"
+      },
+      "writes": true,
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Documented from ui code; a plain link."
+    }
+  ],
+  "provenance": {
+    "verification": "live-capture",
+    "capturedOn": "2026-11-22",
+    "sources": [
+      {
+        "kind": "device-ui-js",
+        "ref": "js/main.js, js/net_set.js, js/wireless_ssid.js, js/wisp.js, js/cloud_management.js, js/directupgrade.js and the rest of the UI tree, mirrored from the device",
+        "notes": "Field names, value encodings and client-side validation ranges were read from these files."
+      },
+      {
+        "kind": "device-ui-html",
+        "ref": "html/*.html",
+        "notes": "Native form posts (password change, reboot, reset, backup, upgrade) are defined only in the markup."
+      },
+      {
+        "kind": "live-response",
+        "ref": "Captured replies quoted per endpoint under 'evidence'",
+        "notes": "Every getter in this document was captured from a running unit."
+      },
+      {
+        "kind": "client-code",
+        "ref": "tendactl (Go) and the universal-router-control Android adapter",
+        "notes": "Cross-check of the wire contract against two independent clients."
+      }
+    ],
+    "unsupported": [
+      "/goform/GetUSBStatus",
+      "/goform/GetPrinterCfg",
+      "/goform/SetPrinterCfg",
+      "/goform/GetSambaCfg",
+      "/goform/SetSambaCfg",
+      "/goform/GetDlnaCfg",
+      "/goform/SetDlnaCfg",
+      "/goform/expandDlnaFile",
+      "/goform/refreshDLNA",
+      "/goform/GetUsbCfg",
+      "/goform/setUsbUnload",
+      "/goform/getThundercfg",
+      "/goform/setThundercfg"
+    ],
+    "notes": "This unit has no USB port and the build sets CONFIG_USB_MODULES=\"n\", so the whole USB subsystem is compiled out; every getter above answers 'Form <Name> is not defined'. They are listed so a client can explain the gap instead of retrying. The blacklist and the MAC-filter list are two different lists and must not be conflated."
+  },
+  "identify": {
+    "endpoint": "status.router",
+    "field": "deviceName",
+    "equals": "AC10",
+    "requiresAuth": true,
+    "notes": "deviceName is present on this build. status.system's adv_firm_ver is the authoritative firmware string and must be compared against matchPrefix before any write endpoint is used."
+  },
+  "envelopes": {
+    "resultField": "errCode",
+    "successValue": 0,
+    "errorCodes": [
+      {
+        "code": 1,
+        "reason": "rejected",
+        "notes": "Generic refusal, or 'list full' on blacklist and parental endpoints."
+      },
+      {
+        "code": 2,
+        "reason": "busy",
+        "notes": "On nat.dmz.set specifically: the DMZ host equals the LAN address."
+      },
+      {
+        "code": 3,
+        "reason": "busy"
+      }
+    ],
+    "nonJsonEndpoints": [
+      "/goform/SysToolReboot",
+      "/goform/SysToolRestoreSet",
+      "/goform/SysToolChangePwd",
+      "/cgi-bin/UploadCfg",
+      "/cgi-bin/upgrade",
+      "/goform/exit",
+      "/goform/parentControlEn",
+      "/goform/fast_setting_internet_set"
+    ],
+    "notes": "errCode arrives as an unquoted JSON number; the vendor JS compares it loosely. Endpoints in nonJsonEndpoints answer with a redirect or HTML and must not be parsed as JSON."
+  }
+}

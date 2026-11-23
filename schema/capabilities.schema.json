@@ -1,0 +1,293 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/universal-router-control/router-api-definitions/main/schema/capabilities.schema.json",
+  "title": "Router capabilities",
+  "description": "Feature flags for one model and firmware line, derived only from endpoints present in the matching api.json. The Android app reads this to decide which controls to show, so a missing key means unknown and false means the device cannot do it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "definitionVersion",
+    "vendor",
+    "model",
+    "variant",
+    "features"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "definitionVersion": {
+      "description": "Must equal the definitionVersion of the api.json in the same directory. tools/validate.py enforces this.",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "vendor": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "variant": {
+      "type": "string"
+    },
+    "features": {
+      "$ref": "#/$defs/features"
+    },
+    "limits": {
+      "$ref": "#/$defs/limits"
+    }
+  },
+  "$defs": {
+    "feature": {
+      "description": "'full' = read and write both available; 'read-only' = the device reports it but this firmware has no verified setter; 'unknown' = the device may support it but nothing in the definition proves either way, so a client must not hide the control; absent = not present, meaning false.",
+      "enum": [
+        "full",
+        "read-only",
+        "unknown"
+      ]
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.basic": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.radio": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.guest": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.schedule": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.wps": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.beamforming": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.power": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.antijam": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.repeating": {
+          "$ref": "#/$defs/feature"
+        },
+        "wifi.scan": {
+          "$ref": "#/$defs/feature"
+        },
+        "apmode": {
+          "$ref": "#/$defs/feature"
+        },
+        "wan": {
+          "$ref": "#/$defs/feature"
+        },
+        "wan.macclone": {
+          "$ref": "#/$defs/feature"
+        },
+        "lan": {
+          "$ref": "#/$defs/feature"
+        },
+        "dhcp.reservation": {
+          "$ref": "#/$defs/feature"
+        },
+        "clients.list": {
+          "$ref": "#/$defs/feature"
+        },
+        "clients.block": {
+          "$ref": "#/$defs/feature"
+        },
+        "clients.rename": {
+          "$ref": "#/$defs/feature"
+        },
+        "parental": {
+          "$ref": "#/$defs/feature"
+        },
+        "bandwidth": {
+          "$ref": "#/$defs/feature"
+        },
+        "portforward": {
+          "$ref": "#/$defs/feature"
+        },
+        "dmz": {
+          "$ref": "#/$defs/feature"
+        },
+        "upnp": {
+          "$ref": "#/$defs/feature"
+        },
+        "firewall": {
+          "$ref": "#/$defs/feature"
+        },
+        "macfilter": {
+          "$ref": "#/$defs/feature"
+        },
+        "staticroute": {
+          "$ref": "#/$defs/feature"
+        },
+        "ddns": {
+          "$ref": "#/$defs/feature"
+        },
+        "iptv": {
+          "$ref": "#/$defs/feature"
+        },
+        "remoteadmin": {
+          "$ref": "#/$defs/feature"
+        },
+        "vpn.server": {
+          "$ref": "#/$defs/feature"
+        },
+        "vpn.client": {
+          "$ref": "#/$defs/feature"
+        },
+        "cloud": {
+          "$ref": "#/$defs/feature"
+        },
+        "led": {
+          "$ref": "#/$defs/feature"
+        },
+        "sleep": {
+          "$ref": "#/$defs/feature"
+        },
+        "firmware.upgrade": {
+          "$ref": "#/$defs/feature"
+        },
+        "backup": {
+          "$ref": "#/$defs/feature"
+        },
+        "logs": {
+          "$ref": "#/$defs/feature"
+        },
+        "time": {
+          "$ref": "#/$defs/feature"
+        },
+        "reboot": {
+          "$ref": "#/$defs/feature"
+        },
+        "autoReboot": {
+          "$ref": "#/$defs/feature"
+        },
+        "factoryreset": {
+          "$ref": "#/$defs/feature"
+        },
+        "password": {
+          "$ref": "#/$defs/feature"
+        },
+        "usb.storage": {
+          "$ref": "#/$defs/feature"
+        },
+        "usb.printer": {
+          "$ref": "#/$defs/feature"
+        },
+        "dlna": {
+          "$ref": "#/$defs/feature"
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bands": {
+          "description": "Radios the firmware manages, in the order the app should draw them.",
+          "type": "array",
+          "items": {
+            "enum": [
+              "2.4g",
+              "5g",
+              "6g"
+            ]
+          }
+        },
+        "ssidMaxBytes": {
+          "type": "integer"
+        },
+        "wifiPasswordMinLength": {
+          "type": "integer"
+        },
+        "wifiPasswordMaxLength": {
+          "type": "integer"
+        },
+        "adminPasswordMinLength": {
+          "type": "integer"
+        },
+        "adminPasswordMaxLength": {
+          "type": "integer"
+        },
+        "maxBlacklistEntries": {
+          "type": "integer"
+        },
+        "maxParentalRules": {
+          "type": "integer"
+        },
+        "maxPortForwardRules": {
+          "type": "integer"
+        },
+        "maxStaticRoutes": {
+          "type": "integer"
+        },
+        "maxIpMacBindings": {
+          "type": "integer"
+        },
+        "maxMacFilterEntries": {
+          "type": "integer"
+        },
+        "maxVpnUsers": {
+          "type": "integer"
+        },
+        "maxGuestVlanIds": {
+          "type": "integer"
+        },
+        "deviceNameMaxLength": {
+          "type": "integer"
+        },
+        "wanPorts": {
+          "type": "integer"
+        },
+        "guestValidityHours": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "wanConnectionTypes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "value",
+              "label"
+            ],
+            "properties": {
+              "value": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "regions": {
+                "description": "Regions where this option is offered, when the firmware hides it elsewhere.",
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

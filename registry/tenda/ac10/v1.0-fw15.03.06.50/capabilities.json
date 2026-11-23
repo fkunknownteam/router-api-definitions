@@ -1,0 +1,117 @@
+{
+  "$schema": "../../../../schema/capabilities.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tenda",
+  "model": "AC10",
+  "variant": "v1.0-fw15.03.06.50",
+  "features": {
+    "status": "full",
+    "wifi.basic": "full",
+    "wifi.radio": "full",
+    "wifi.guest": "full",
+    "wifi.schedule": "full",
+    "wifi.wps": "full",
+    "wifi.beamforming": "full",
+    "wifi.power": "full",
+    "wifi.antijam": "full",
+    "wifi.repeating": "full",
+    "wifi.scan": "read-only",
+    "apmode": "full",
+    "wan": "full",
+    "wan.macclone": "full",
+    "lan": "full",
+    "dhcp.reservation": "full",
+    "clients.list": "full",
+    "clients.block": "full",
+    "clients.rename": "full",
+    "parental": "full",
+    "bandwidth": "full",
+    "portforward": "full",
+    "dmz": "full",
+    "upnp": "full",
+    "firewall": "full",
+    "macfilter": "full",
+    "staticroute": "full",
+    "ddns": "full",
+    "iptv": "full",
+    "remoteadmin": "full",
+    "vpn.server": "full",
+    "vpn.client": "full",
+    "cloud": "full",
+    "led": "full",
+    "sleep": "full",
+    "firmware.upgrade": "full",
+    "backup": "full",
+    "logs": "full",
+    "time": "full",
+    "reboot": "full",
+    "autoReboot": "full",
+    "factoryreset": "full",
+    "password": "full"
+  },
+  "limits": {
+    "bands": [
+      "2.4g",
+      "5g"
+    ],
+    "ssidMaxBytes": 32,
+    "wifiPasswordMinLength": 8,
+    "wifiPasswordMaxLength": 63,
+    "adminPasswordMinLength": 5,
+    "adminPasswordMaxLength": 32,
+    "maxBlacklistEntries": 30,
+    "maxParentalRules": 30,
+    "maxPortForwardRules": 16,
+    "maxStaticRoutes": 10,
+    "maxIpMacBindings": 32,
+    "maxMacFilterEntries": 30,
+    "maxVpnUsers": 8,
+    "maxGuestVlanIds": 8,
+    "deviceNameMaxLength": 20,
+    "wanPorts": 1,
+    "guestValidityHours": [
+      0,
+      4,
+      8
+    ],
+    "wanConnectionTypes": [
+      {
+        "value": "0",
+        "label": "Dynamic IP Address"
+      },
+      {
+        "value": "1",
+        "label": "Static IP Address"
+      },
+      {
+        "value": "2",
+        "label": "PPPoE"
+      },
+      {
+        "value": "3",
+        "label": "PPTP (Russia)",
+        "regions": [
+          "RU",
+          "UA"
+        ]
+      },
+      {
+        "value": "4",
+        "label": "L2TP (Russia)",
+        "regions": [
+          "RU",
+          "UA"
+        ]
+      },
+      {
+        "value": "5",
+        "label": "PPPoE (Russia)",
+        "regions": [
+          "RU",
+          "UA"
+        ]
+      }
+    ]
+  }
+}

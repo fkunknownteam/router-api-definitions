@@ -1,0 +1,446 @@
+{
+  "$schema": "../../../../schema/api-definition.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tenda",
+  "vendorName": "Tenda",
+  "model": "AC10",
+  "modelSlug": "ac10",
+  "variant": "v3.0-fw03.03.16.11",
+  "hardwareVersions": [
+    "V3.0"
+  ],
+  "firmware": {
+    "verified": "V03.03.16.11_multi",
+    "match": "prefix",
+    "matchPrefix": "V03.03.16",
+    "family": "goahead-aes-md5",
+    "notes": "Recovered from the live UI (js/remote_web.js, js/aes/util.js, js/libs/public.js) and cross-checked against the shipped image US_AC10V3.0re_V03.03.16.11_multi_TDE01.bin. This line is the AES session family, unlike the plaintext V15.03.06 line."
+  },
+  "identify": {
+    "endpoint": "status.system",
+    "field": "adv_hard_ver",
+    "equals": "V3.0",
+    "requiresAuth": true,
+    "notes": "adv_hard_ver reads 'V3.0' on this line. Confirm adv_firm_ver against matchPrefix as well: the two V-lines are different firmware generations with different transport, and a wrong choice fails at the first decryption rather than at login."
+  },
+  "transport": {
+    "scheme": "http",
+    "defaultHost": "192.168.0.1",
+    "defaultPort": 80,
+    "altHosts": [
+      "tendawifi.com"
+    ],
+    "pathPrefix": "",
+    "requestTimeoutMs": 12000,
+    "verifyTls": true,
+    "cacheBuster": "random",
+    "notes": "Getters accept a random cache-buster query which the router ignores. Requests need a Referer of http://<host>/main.html to look like the UI."
+  },
+  "session": {
+    "type": "cookie-on-login",
+    "cookieName": "password",
+    "maxConcurrentSessions": 1,
+    "login": {
+      "endpoint": "/login/Auth",
+      "method": "POST",
+      "body": {
+        "username": "admin",
+        "password": "{password}"
+      },
+      "passwordEncoding": "md5-hex",
+      "success": {
+        "kind": "redirect-to-main",
+        "successCodes": [
+          "302"
+        ],
+        "refusalCodes": {
+          "1": "wrong-password",
+          "2": "wrong-username",
+          "3": "already-signed-in",
+          "4": "locked-out"
+        },
+        "loginPageMarker": "/login.html"
+      },
+      "notes": "Success is a 302 to /main.html plus a password=<token> cookie. Only a redirect back to login.html is a rejection."
+    },
+    "logout": {
+      "endpoint": "/goform/exit",
+      "method": "GET"
+    },
+    "expiry": {
+      "statusCodes": [
+        302
+      ],
+      "bodyMarkers": [
+        "<!DOCTYPE"
+      ],
+      "redirectTo": "/login.html"
+    },
+    "lockout": {
+      "probeEndpoint": "/goform/getLoginInfo",
+      "attemptsField": "leftTimes",
+      "lockedField": "isLocked",
+      "notes": "Readable without a session. Never spend a user's remaining attempts probing passwords."
+    }
+  },
+  "crypto": {
+    "type": "aes-128-cbc-base64",
+    "iv": "EU5H62G9ICGRNI43",
+    "ivEncoding": "ascii",
+    "keySource": {
+      "kind": "endpoint-field",
+      "endpoint": "/goform/stokCfg",
+      "field": "sign",
+      "perRequest": true
+    },
+    "appliesTo": {
+      "request": true,
+      "response": true
+    },
+    "plaintextPaths": [
+      "/login/Auth",
+      "/goform/stokCfg",
+      "/goform/getLoginInfo"
+    ],
+    "notes": "AES-128-CBC with PKCS7 padding, base64 on the wire. The sign value is a fresh 16-character key on every call, so a client must fetch it immediately before each request and decrypt the reply with that same key. Reusing a key from login or from a previous call yields undecryptable garbage that looks like a corrupt response."
+  },
+  "envelopes": {
+    "resultField": "errCode",
+    "successValue": 0,
+    "errorCodes": [
+      {
+        "code": 1,
+        "reason": "rejected"
+      },
+      {
+        "code": 2,
+        "reason": "busy"
+      },
+      {
+        "code": 3,
+        "reason": "busy"
+      }
+    ],
+    "nonJsonEndpoints": [
+      "/login/Auth",
+      "/goform/stokCfg",
+      "/goform/getLoginInfo"
+    ],
+    "notes": "Authenticated replies are AES-CBC ciphertext; the envelope appears only after decryption. Parse JSON first, then fall back to decrypt-then-parse: a plaintext reply means the endpoint was not encrypted."
+  },
+  "endpoints": [
+    {
+      "id": "session.login",
+      "path": "/login/Auth",
+      "method": "POST",
+      "purpose": "Authenticate the admin session.",
+      "uiPage": "login page",
+      "feature": "status",
+      "request": {
+        "bodyEncoding": "form",
+        "fields": [
+          {
+            "name": "username",
+            "type": "string",
+            "notes": "Sent in plaintext."
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "secret": true,
+            "notes": "MD5 hex of the plaintext password."
+          }
+        ]
+      },
+      "response": {
+        "kind": "text"
+      },
+      "risk": "safe",
+      "verified": "live-roundtrip",
+      "evidence": "Exercised on an AC10 V3.0 running V03.03.16.11; success is a 302 to main.html plus a 'password' cookie, refusal is a bare number.",
+      "notes": "Bodies are never encrypted. 1 wrong password, 2 wrong user, 3 already signed in, 4 locked. Some builds answer 10-14 for a refusal as well. Do not treat the reply body as a page: a refused login can still return the full main page."
+    },
+    {
+      "id": "session.key",
+      "path": "/goform/stokCfg",
+      "method": "GET",
+      "purpose": "Fetch the per-request AES key.",
+      "uiPage": "every authenticated page",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "sign",
+            "type": "string",
+            "secret": true,
+            "notes": "16-character ASCII key, regenerated on every call."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-roundtrip",
+      "evidence": "Called before every authenticated request on this firmware."
+    },
+    {
+      "id": "session.info",
+      "path": "/goform/getLoginInfo",
+      "method": "GET",
+      "purpose": "Lock state and remaining password attempts, readable without a session.",
+      "uiPage": "login page",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "isLocked",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "leftTimes",
+            "type": "integer",
+            "notes": "Attempts left before the lockout."
+          },
+          {
+            "name": "time",
+            "type": "integer",
+            "unit": "seconds",
+            "notes": "Lockout duration."
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-roundtrip",
+      "evidence": "Read before login on an AC10 V3.0 to avoid spending attempts.",
+      "notes": "If leftTimes does not decrease after a refused attempt, the attempt never reached the auth check: suspect a held session slot rather than a wrong password."
+    },
+    {
+      "id": "status.system",
+      "path": "/goform/GetSystemStatus",
+      "method": "GET",
+      "purpose": "Firmware and hardware revision, uptime, LAN identity.",
+      "uiPage": "system_status.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "adv_firm_ver",
+            "type": "string"
+          },
+          {
+            "name": "adv_hard_ver",
+            "type": "string"
+          },
+          {
+            "name": "adv_run_time",
+            "type": "integer",
+            "unit": "seconds"
+          },
+          {
+            "name": "adv_lan_ip",
+            "type": "string"
+          },
+          {
+            "name": "adv_lan_mask",
+            "type": "string"
+          },
+          {
+            "name": "adv_lan_mac",
+            "type": "string"
+          },
+          {
+            "name": "adv_sys_time",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Read on an AC10 V3.0 to record the running firmware string."
+    },
+    {
+      "id": "status.summary",
+      "path": "/goform/GetSysStatus",
+      "method": "GET",
+      "purpose": "Compact system tile state including the remote-admin flag.",
+      "uiPage": "main.html",
+      "feature": "status",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "firmware",
+            "type": "string"
+          },
+          {
+            "name": "remoteWeb",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "rebootEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "wl_mode",
+            "type": "string"
+          },
+          {
+            "name": "lan",
+            "type": "string"
+          },
+          {
+            "name": "ipMacBindEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "syncInternetTime",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-capture",
+      "evidence": "Read on an AC10 V3.0 as the confirmation read after a remote-admin write."
+    },
+    {
+      "id": "remote.get",
+      "path": "/goform/GetRemoteWebCfg",
+      "method": "GET",
+      "purpose": "WAN-side web administration configuration.",
+      "uiPage": "remote_web.html",
+      "feature": "remoteadmin",
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "remoteWebEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "remoteIp",
+            "type": "string",
+            "notes": "'0.0.0.0' = any source."
+          },
+          {
+            "name": "remotePort",
+            "type": "integer"
+          },
+          {
+            "name": "syspwdflag",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ],
+            "notes": "0 means no admin password is set, and remote admin is then refused."
+          },
+          {
+            "name": "lanIp",
+            "type": "string"
+          },
+          {
+            "name": "lanMask",
+            "type": "string"
+          }
+        ]
+      },
+      "risk": "safe",
+      "verified": "live-roundtrip",
+      "evidence": "Read, written, and read back on an AC10 V3.0."
+    },
+    {
+      "id": "remote.set",
+      "path": "/goform/SetRemoteWebCfg",
+      "method": "POST",
+      "purpose": "Enable/disable WAN-side web administration.",
+      "uiPage": "remote_web.html",
+      "feature": "remoteadmin",
+      "request": {
+        "bodyEncoding": "encrypted-form",
+        "fields": [
+          {
+            "name": "remoteWebEn",
+            "type": "string",
+            "values": [
+              "0",
+              "1"
+            ]
+          },
+          {
+            "name": "remoteIp",
+            "type": "string",
+            "notes": "'0.0.0.0' allows every source address; any other value is a one-address allow-list."
+          },
+          {
+            "name": "remotePort",
+            "type": "integer",
+            "notes": "1-65535."
+          }
+        ]
+      },
+      "response": {
+        "kind": "json-object",
+        "fields": [
+          {
+            "name": "errCode",
+            "type": "integer"
+          }
+        ]
+      },
+      "writes": true,
+      "risk": "medium",
+      "requiresConfirmation": true,
+      "verified": "live-roundtrip",
+      "evidence": "remoteWebEn=1&remoteIp=0.0.0.0&remotePort=5000 accepted with errCode 0; the read reflected the new port.",
+      "notes": "Refused while syspwdflag is 0. This exposes the admin UI to the internet."
+    }
+  ],
+  "provenance": {
+    "verification": "live-capture",
+    "capturedOn": "2026-11-22",
+    "sources": [
+      {
+        "kind": "device-ui-js",
+        "ref": "js/remote_web.js, js/aes/util.js, js/libs/public.js",
+        "notes": "Login flow, AES parameters and the remote-admin form contract."
+      },
+      {
+        "kind": "firmware-image",
+        "ref": "US_AC10V3.0re_V03.03.16.11_multi_TDE01.bin",
+        "notes": "Used to cross-check the UI files; the live device was authoritative where they differed."
+      },
+      {
+        "kind": "live-response",
+        "ref": "Reads and one write round-trip on an AC10 V3.0",
+        "notes": "Every endpoint in this document was exercised on hardware."
+      }
+    ],
+    "notes": "DELIBERATELY INCOMPLETE. Only endpoints actually exercised on this firmware line are listed. The wider AC10 map in the v1.0-fw15.03.06.50 document (WiFi, clients, NAT, VPN, system) very likely exists here too, because the page names and goform handler names are shared across AC10 builds, but it was NOT re-verified on V03.03.16 and is therefore not claimed. A client must probe with a read endpoint before offering a write, and must treat a missing feature as unknown rather than absent."
+  }
+}

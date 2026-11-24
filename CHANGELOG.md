@@ -53,8 +53,15 @@ POST /login/login.json  "JSONDATA: {"sign":"<hex>","data":"<base64>"}"
     that does not use URLs at all. The UI calls
     `ajax.request({proxy:"loginProxy", method:"login"})`, which the framework
     turns into `$.su.url("?code=" + HTTP_OP)` — numeric opcodes over one CGI
-    entry point, with a `getLocalTmpKey` / `resetEncryptor` handshake. The
-    opcode table was not recovered, so this family is still unmodelled.
+    entry point. That much is now recovered and verified: the opcode table reads
+    `HTTP_INSTRUCT=0, HTTP_WRITE=1, HTTP_READ=2, HTTP_UPLOAD=3, HTTP_DOWNLOAD=4,
+    HTTP_RESET=5, HTTP_REBOOT=6, HTTP_AUTH=7, ... HTTP_UPLOAD_IMG=19`, login is
+    `HTTP_AUTH=7` against `loginCheck`, and the password encoding is
+    `su.encrypt(pwd, key)` — an XOR against a server-supplied key indexed into a
+    255-character alphabet, reproduced byte-identically against the firmware's
+    own function. Modelling this family needs an opcode transport that the
+    schema does not have yet, so these two remain `not-captured` until that
+    exists rather than pretending a URL-based definition fits.
   - **TL-WR845N, TL-WR846N, TL-WR850N, ARCHER-C24** have no extracted firmware
     image in the source material at all, so there is nothing to read.
 

@@ -1,0 +1,818 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/api-definition.schema.json",
+  "schemaVersion": "1.0",
+  "definitionVersion": "1.0.0",
+  "vendor": "tplink",
+  "vendorName": "TP-Link",
+  "model": "ARCHER-C6",
+  "modelSlug": "archer-c6",
+  "variant": "v2-fw-evidence",
+  "hardwareVersions": [
+    "V2",
+    "V2.80"
+  ],
+  "firmware": {
+    "match": "family",
+    "verified": "20260902",
+    "notes": "Derived from ArcherC6v2_us_tw_c6us-up-ver1-2-1-P1[20260902-rel38654].bin, firmware 1.2.1 Build 260902 (US), published 2026-10-19. The same image is listed for hardware V2 and V2.80."
+  },
+  "transport": {
+    "scheme": "http",
+    "defaultHost": "192.168.0.1",
+    "defaultPort": 80,
+    "altHosts": [
+      "tplinkwifi.net",
+      "192.168.1.1"
+    ],
+    "pathPrefix": "",
+    "requestTimeoutMs": 12000,
+    "verifyTls": true,
+    "cacheBuster": "none",
+    "notes": "The C6 answers on 192.168.0.1 out of the box and moves to 192.168.1.1 when it detects an upstream conflict; the firmware ships both. Which one a given unit uses was not captured, so the client should probe."
+  },
+  "session": {
+    "type": "cookie-on-login",
+    "maxConcurrentSessions": 1,
+    "login": {
+      "endpoint": "/login?form=login",
+      "method": "POST",
+      "kind": "challenge",
+      "verified": "ui-code",
+      "payloadEncoding": "form",
+      "success": {
+        "kind": "json-token",
+        "tokenField": "stok"
+      },
+      "challenge": {
+        "issuer": {
+          "endpoint": "/login?form=auth",
+          "method": "GET",
+          "extract": {
+            "format": "json",
+            "map": {
+              "nn": "key.0",
+              "ee": "key.1",
+              "seq": "seq"
+            }
+          }
+        },
+        "hash": "md5-hex-of-username-plus-password",
+        "cipher": {
+          "type": "aes-128-cbc-base64",
+          "keyChars": 16,
+          "ivChars": 16,
+          "charset": "digits",
+          "keyReport": "k=%key%&i=%iv%"
+        },
+        "signature": {
+          "type": "rsa-pkcs1-v1_5",
+          "bits": 512,
+          "plaintext": "%keyReport%&h=%hash%&s=%seqPlusDataLen%"
+        },
+        "envelope": "sign=%sign%&data=%data%",
+        "payload": "form-body",
+        "payloadTemplate": "operation=login&password={password}"
+      }
+    }
+  },
+  "endpoints": [
+    {
+      "id": "admin.access-control.form.black-devices",
+      "method": "GET",
+      "path": "/admin/access_control?form=black_devices",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.access-control.form.black-list",
+      "method": "GET",
+      "path": "/admin/access_control?form=black_list",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.access-control.form.enable",
+      "method": "POST",
+      "path": "/admin/access_control?form=enable",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.access-control.form.mode",
+      "method": "GET",
+      "path": "/admin/access_control?form=mode",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.access-control.form.white-devices",
+      "method": "GET",
+      "path": "/admin/access_control?form=white_devices",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.access-control.form.white-list",
+      "method": "GET",
+      "path": "/admin/access_control?form=white_list",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.administration.form.account",
+      "method": "GET",
+      "path": "/admin/administration?form=account",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.administration.form.https",
+      "method": "GET",
+      "path": "/admin/administration?form=https",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.administration.form.local",
+      "method": "GET",
+      "path": "/admin/administration?form=local",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.administration.form.mode",
+      "method": "GET",
+      "path": "/admin/administration?form=mode",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.administration.form.recovery",
+      "method": "GET",
+      "path": "/admin/administration?form=recovery",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.administration.form.remote",
+      "method": "GET",
+      "path": "/admin/administration?form=remote",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.administration.form.testmail",
+      "method": "POST",
+      "path": "/admin/administration?form=testmail",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.administration.form.view",
+      "method": "GET",
+      "path": "/admin/administration?form=view",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.check-cloud-version",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=check_cloud_version",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.check-device",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=check_device",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.check-internet",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=check_internet",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.check-login",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=check_login",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.check-support",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=check_support",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.check-upgrade",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=check_upgrade",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.cloud-bind-status",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=cloud_bind_status",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.cloud-unbind",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=cloud_unbind",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.detect-upgrade-status",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=detect_upgrade_status",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.set-show-flag",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=set_show_flag",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.cloud-account.form.user-login",
+      "method": "POST",
+      "path": "/admin/cloud_account?form=user_login",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.ddns.form.dyndns",
+      "method": "GET",
+      "path": "/admin/ddns?form=dyndns",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.ddns.form.noip",
+      "method": "GET",
+      "path": "/admin/ddns?form=noip",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.ddns.form.provider",
+      "method": "GET",
+      "path": "/admin/ddns?form=provider",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.ddns.form.tplink",
+      "method": "GET",
+      "path": "/admin/ddns?form=tplink",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.diag.form.diag",
+      "method": "POST",
+      "path": "/admin/diag?form=diag",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.firmware.form.config",
+      "method": "POST",
+      "path": "/admin/firmware?form=config",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.firmware.form.config-multipart",
+      "method": "POST",
+      "path": "/admin/firmware?form=config_multipart",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.firmware.form.upgrade",
+      "method": "POST",
+      "path": "/admin/firmware?form=upgrade",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.imb.form.arp-list",
+      "method": "GET",
+      "path": "/admin/imb?form=arp_list",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.imb.form.bind-list",
+      "method": "POST",
+      "path": "/admin/imb?form=bind_list",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.imb.form.setting",
+      "method": "POST",
+      "path": "/admin/imb?form=setting",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.iptv.form.setting",
+      "method": "POST",
+      "path": "/admin/iptv?form=setting",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.nat.form.alg",
+      "method": "GET",
+      "path": "/admin/nat?form=alg",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.nat.form.dmz",
+      "method": "GET",
+      "path": "/admin/nat?form=dmz",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.nat.form.pt",
+      "method": "GET",
+      "path": "/admin/nat?form=pt",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.nat.form.setting",
+      "method": "POST",
+      "path": "/admin/nat?form=setting",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.nat.form.vs",
+      "method": "GET",
+      "path": "/admin/nat?form=vs",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.network.form.routes-static",
+      "method": "GET",
+      "path": "/admin/network?form=routes_static",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.network.form.routes-system",
+      "method": "GET",
+      "path": "/admin/network?form=routes_system",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.network.form.wan-autodetect",
+      "method": "POST",
+      "path": "/admin/network?form=wan_autodetect",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.openvpn.form.openvpn-cert-generate",
+      "method": "GET",
+      "path": "/admin/openvpn?form=openvpn_cert_generate",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.quick-setup.form.ap-setup",
+      "method": "POST",
+      "path": "/admin/quick_setup?form=ap_setup",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.quick-setup.form.check-internet",
+      "method": "POST",
+      "path": "/admin/quick_setup?form=check_internet",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.quick-setup.form.check-router",
+      "method": "POST",
+      "path": "/admin/quick_setup?form=check_router",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.quick-setup.form.quick-setup",
+      "method": "POST",
+      "path": "/admin/quick_setup?form=quick_setup",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.reboot.form.set",
+      "method": "POST",
+      "path": "/admin/reboot?form=set",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.region.form.region",
+      "method": "GET",
+      "path": "/admin/region?form=region",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.region.form.regionlist",
+      "method": "GET",
+      "path": "/admin/region?form=regionlist",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.security-settings.form.dos",
+      "method": "GET",
+      "path": "/admin/security_settings?form=dos",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.security-settings.form.dosform.ping",
+      "method": "GET",
+      "path": "/admin/security_settings?form=dos&form=ping",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.security-settings.form.dos-setting",
+      "method": "POST",
+      "path": "/admin/security_settings?form=dos_setting",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.security-settings.form.enable",
+      "method": "POST",
+      "path": "/admin/security_settings?form=enable",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.security-settings.form.list",
+      "method": "GET",
+      "path": "/admin/security_settings?form=list",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.security-settings.form.spi-enable",
+      "method": "POST",
+      "path": "/admin/security_settings?form=spi_enable",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.smart-network.form.device-priority",
+      "method": "GET",
+      "path": "/admin/smart_network?form=device_priority",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.smart-network.form.qos",
+      "method": "GET",
+      "path": "/admin/smart_network?form=qos",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.syslog.form.filter",
+      "method": "GET",
+      "path": "/admin/syslog?form=filter",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.syslog.form.log",
+      "method": "GET",
+      "path": "/admin/syslog?form=log",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.syslog.form.mail",
+      "method": "GET",
+      "path": "/admin/syslog?form=mail",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.syslog.form.save-log",
+      "method": "POST",
+      "path": "/admin/syslog?form=save_log",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.syslog.form.types",
+      "method": "GET",
+      "path": "/admin/syslog?form=types",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.system.firmware.form.factory",
+      "method": "GET",
+      "path": "/admin/system/firmware?form=factory",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.system.firmware.form.restore",
+      "method": "POST",
+      "path": "/admin/system/firmware?form=restore",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.system.form.logout",
+      "method": "POST",
+      "path": "/admin/system?form=logout",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.system.form.reboot",
+      "method": "POST",
+      "path": "/admin/system?form=reboot",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.time.form.dst",
+      "method": "GET",
+      "path": "/admin/time?form=dst",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.time.form.settings",
+      "method": "POST",
+      "path": "/admin/time?form=settings",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.time.form.timezone",
+      "method": "GET",
+      "path": "/admin/time?form=timezone",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.traffic.form.lists",
+      "method": "GET",
+      "path": "/admin/traffic?form=lists",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.traffic.form.status",
+      "method": "GET",
+      "path": "/admin/traffic?form=status",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.upnp.form.enable",
+      "method": "POST",
+      "path": "/admin/upnp?form=enable",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.upnp.form.service",
+      "method": "GET",
+      "path": "/admin/upnp?form=service",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.vpn.form.vpn-user-devices",
+      "method": "GET",
+      "path": "/admin/vpn?form=vpn_user_devices",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.vpn.form.vpn-user-list",
+      "method": "GET",
+      "path": "/admin/vpn?form=vpn_user_list",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.guest",
+      "method": "GET",
+      "path": "/admin/wireless?form=guest",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.guestform.guest-2gform.guest-5g",
+      "method": "GET",
+      "path": "/admin/wireless?form=guest&form=guest_2g&form=guest_5g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.guest-2g",
+      "method": "GET",
+      "path": "/admin/wireless?form=guest_2g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.guest-5g",
+      "method": "GET",
+      "path": "/admin/wireless?form=guest_5g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.region",
+      "method": "GET",
+      "path": "/admin/wireless?form=region",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.smart-connect",
+      "method": "POST",
+      "path": "/admin/wireless?form=smart_connect",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.statistics",
+      "method": "GET",
+      "path": "/admin/wireless?form=statistics",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.survey-2g",
+      "method": "GET",
+      "path": "/admin/wireless?form=survey_2g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.survey-5g",
+      "method": "GET",
+      "path": "/admin/wireless?form=survey_5g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.syspara-2g",
+      "method": "GET",
+      "path": "/admin/wireless?form=syspara_2g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.syspara-5g",
+      "method": "GET",
+      "path": "/admin/wireless?form=syspara_5g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.syspara-wps",
+      "method": "GET",
+      "path": "/admin/wireless?form=syspara_wps",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.wireless-2g",
+      "method": "GET",
+      "path": "/admin/wireless?form=wireless_2g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.wireless-2gform.wireless-5g",
+      "method": "GET",
+      "path": "/admin/wireless?form=wireless_2g&form=wireless_5g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.wireless-5g",
+      "method": "GET",
+      "path": "/admin/wireless?form=wireless_5g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.wireless-schedule-2g",
+      "method": "GET",
+      "path": "/admin/wireless?form=wireless_schedule_2g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.wireless-schedule-52g",
+      "method": "GET",
+      "path": "/admin/wireless?form=wireless_schedule_52g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.wireless-schedule-5g",
+      "method": "GET",
+      "path": "/admin/wireless?form=wireless_schedule_5g",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.wireless-schedule-wifi-disable",
+      "method": "POST",
+      "path": "/admin/wireless?form=wireless_schedule_wifi_disable",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.wps-connect",
+      "method": "POST",
+      "path": "/admin/wireless?form=wps_connect",
+      "verified": "ui-code"
+    },
+    {
+      "id": "admin.wireless.form.wps-pin",
+      "method": "GET",
+      "path": "/admin/wireless?form=wps_pin",
+      "verified": "ui-code"
+    },
+    {
+      "id": "domain-login.form.dlogin",
+      "method": "POST",
+      "path": "/domain_login?form=dlogin",
+      "verified": "ui-code"
+    },
+    {
+      "id": "locale.form.index-lang",
+      "method": "GET",
+      "path": "/locale?form=index_lang",
+      "verified": "ui-code"
+    },
+    {
+      "id": "locale.form.lang",
+      "method": "GET",
+      "path": "/locale?form=lang",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.auth",
+      "method": "GET",
+      "path": "/login?form=auth",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.check-factory-default",
+      "method": "POST",
+      "path": "/login?form=check_factory_default",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.check-internet",
+      "method": "POST",
+      "path": "/login?form=check_internet",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.cloud-bind-status",
+      "method": "POST",
+      "path": "/login?form=cloud_bind_status",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.cloud-login",
+      "method": "POST",
+      "path": "/login?form=cloud_login",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.initial-login",
+      "method": "POST",
+      "path": "/login?form=initial_login",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.keys",
+      "method": "GET",
+      "path": "/login?form=keys",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.limit",
+      "method": "GET",
+      "path": "/login?form=limit",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.login",
+      "method": "POST",
+      "path": "/login?form=login",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.password",
+      "method": "GET",
+      "path": "/login?form=password",
+      "verified": "ui-code"
+    },
+    {
+      "id": "login.form.vercode",
+      "method": "GET",
+      "path": "/login?form=vercode",
+      "verified": "ui-code"
+    },
+    {
+      "id": "upgrade.form.read",
+      "method": "GET",
+      "path": "/upgrade?form=read",
+      "verified": "ui-code"
+    },
+    {
+      "id": "wan-error.form.never",
+      "method": "GET",
+      "path": "/wan_error?form=never",
+      "verified": "ui-code"
+    },
+    {
+      "id": "wan-error.form.read",
+      "method": "GET",
+      "path": "/wan_error?form=read",
+      "verified": "ui-code"
+    }
+  ],
+  "provenance": {
+    "verification": "ui-code",
+    "sources": [
+      {
+        "kind": "firmware-image",
+        "ref": "ArcherC6v2_us_tw_c6us-up-ver1-2-1-P1[20260902-rel38654].bin",
+        "notes": "Firmware 1.2.1 Build 260902 (US), published 2026-10-19, 13,933,622 bytes. SquashFS root at offset 1224639."
+      },
+      {
+        "kind": "device-ui-html",
+        "ref": "www/webpages/login.html",
+        "notes": "Defines URL_AUTH=/login?form=auth, URL_LOGIN=/login?form=login, the doLogin sequence and the key/seq issuer read."
+      },
+      {
+        "kind": "device-ui-js",
+        "ref": "www/webpages/js/libs/tpEncrypt.<build>.js",
+        "notes": "setHash, genAESKey, setSeq, setRSAKey, getSignature (53-byte chunks) and dataEncrypt."
+      },
+      {
+        "kind": "device-ui-js",
+        "ref": "www/webpages/js/libs/encrypt.<build>.js",
+        "notes": "The RSA implementation the signature is computed with."
+      },
+      {
+        "kind": "device-ui-js",
+        "ref": "www/webpages/js/libs/cryptoJS.min.<build>.js",
+        "notes": "AES-128-CBC with Pkcs7 padding."
+      },
+      {
+        "kind": "device-ui-js",
+        "ref": "www/webpages/js/su/data/proxy.<build>.js",
+        "notes": "Shows sign/data travel as ordinary form fields, not a CRLF body."
+      }
+    ],
+    "notes": "Login is the same challenge family as TL-WR840N/WR841N but a different build of it: the issuer is /login?form=auth returning JSON {key:[nn,ee],seq}, the key is reported as k=<key>&i=<iv> (not key=/iv=), and sign/data travel as two ordinary form fields rather than a CRLF-framed body. The signature signs 53-byte chunks, which is 512-bit minus PKCS#1 v1.5's 11 bytes of padding -- the same k-11 rule with different chunk arithmetic.\n\nVerified without hardware the same way as the other two families: the firmware's own tpEncrypt.js, encrypt.js and cryptoJS.min.js were executed under Node with a fixed key/IV, and the Python port reproduced the MD5, the base64 ciphertext and the signed string byte for byte.\n\nNot verified: that a real C6 accepts it. No device was present."
+  }
+}

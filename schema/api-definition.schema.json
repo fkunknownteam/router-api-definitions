@@ -475,6 +475,10 @@
                     "form-body",
                     "json-object"
                   ]
+                },
+                "payloadTemplate": {
+                  "description": "Exact plaintext to encrypt, overriding 'payload'. Placeholders: {username}, {password} (raw), {passwordHash} (the challenge hash). Needed because builds differ: the CGI family sends username=<user>&password=<hash>, while the Archer C6 sends operation=login&password=<raw password>.",
+                  "type": "string"
                 }
               }
             },
@@ -491,7 +495,8 @@
                     "redirect-to-main",
                     "body-number",
                     "cookie-set",
-                    "http-200"
+                    "http-200",
+                    "json-token"
                   ]
                 },
                 "successCodes": {
@@ -499,6 +504,10 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "tokenField": {
+                  "description": "Only for kind=json-token. Name of the field in the JSON reply that carries the session token (the Archer C6 returns {\"stok\":\"...\"}); its presence means the login succeeded.",
+                  "type": "string"
                 },
                 "refusalCodes": {
                   "description": "Map of reply code to a stable machine reason the client can localise.",

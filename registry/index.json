@@ -102,6 +102,33 @@
         ]
       },
       {
+        "model": "ARCHER-C6",
+        "slug": "archer-c6",
+        "variantCount": 1,
+        "variants": [
+          {
+            "path": "registry/tplink/archer-c6/v2-fw-evidence",
+            "label": "Hardware V2/V2.80 — firmware 20260902",
+            "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/archer-c6/v2-fw-evidence/api.json",
+            "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/archer-c6/v2-fw-evidence/capabilities.json",
+            "definitionVersion": "1.0.0",
+            "schemaVersion": "1.0",
+            "firmware": "20260902",
+            "matchPrefix": null,
+            "match": "family",
+            "hardwareVersions": [
+              "V2",
+              "V2.80"
+            ],
+            "endpointCount": 117,
+            "sha256": {
+              "api": "f00c5a545dadebcd64666779553bcfccc4b27a3b96c42b7e5baa3b08265ef90b",
+              "capabilities": "31786e28362a0eb2c308ce9fd80712caa6da6c854aec15d3215600bffb3b1549"
+            }
+          }
+        ]
+      },
+      {
         "model": "TL-WR820N",
         "slug": "tl-wr820n",
         "variantCount": 1,
@@ -387,6 +414,26 @@
       "sha256": {
         "api": "0f7d0f99fe79675600a0d4af99aaa5808ab2fd32c2608ca34cd5412478c572fd",
         "capabilities": "9e93b7beb655e10be283cf8b3f66a4a345bc84cb14398cbb25317b0b49ce2dc0"
+      }
+    },
+    {
+      "path": "registry/tplink/archer-c6/v2-fw-evidence",
+      "label": "Hardware V2/V2.80 — firmware 20260902",
+      "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/archer-c6/v2-fw-evidence/api.json",
+      "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/archer-c6/v2-fw-evidence/capabilities.json",
+      "definitionVersion": "1.0.0",
+      "schemaVersion": "1.0",
+      "firmware": "20260902",
+      "matchPrefix": null,
+      "match": "family",
+      "hardwareVersions": [
+        "V2",
+        "V2.80"
+      ],
+      "endpointCount": 117,
+      "sha256": {
+        "api": "f00c5a545dadebcd64666779553bcfccc4b27a3b96c42b7e5baa3b08265ef90b",
+        "capabilities": "31786e28362a0eb2c308ce9fd80712caa6da6c854aec15d3215600bffb3b1549"
       }
     },
     {

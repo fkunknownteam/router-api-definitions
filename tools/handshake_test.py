@@ -17,6 +17,7 @@ import os
 import random
 import sys
 import threading
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -99,6 +100,11 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, json.dumps({
                 "rsa": {"nn": "%x" % KEY["n"], "mm": "%x" % KEY["e"]},
                 "seq": SEQ}), "application/json")
+        elif self.path == "/login?form=auth":
+            # The Archer C6 shape: key is a two-element array, not named fields.
+            self._send(200, json.dumps({
+                "key": ["%x" % KEY["n"], "%x" % KEY["e"]],
+                "seq": SEQ}), "application/json")
         else:
             self._send(404, "no")
 
@@ -129,8 +135,14 @@ class Handler(BaseHTTPRequestHandler):
         signed = b"".join(pieces).decode()
 
         # --- Recover the key the client reported inside the signature.
+        # Two namings exist in the field: key=/iv= on the CGI builds and
+        # k=/i= on the Archer C6. Both arrive inside the same signed string.
         parts = dict(p.split("=", 1) for p in signed.split("&"))
-        key, iv = parts["key"], parts["iv"]
+        key = parts.get("key") or parts.get("k")
+        iv = parts.get("iv") or parts.get("i")
+        if key is None or iv is None:
+            self._send(400, "signature carried no key/iv: %r" % sorted(parts))
+            return
         h, s = parts["h"], parts["s"]
 
         expected_hash = hashlib.md5((USERNAME + PASSWORD).encode()).hexdigest()
@@ -149,7 +161,11 @@ class Handler(BaseHTTPRequestHandler):
         payload = raw.decode()
 
         if PASSWORD in payload or hashlib.md5((USERNAME + PASSWORD).encode()).hexdigest() in payload:
-            if self.path == "/login/login.json":
+            if self.path == "/login?form=login":
+                # Archer C6 signals success with a session token, not a cookie.
+                self._send(200, json.dumps({"stok": "/TESTOKEN1234/"}),
+                           "application/json")
+            elif self.path == "/login/login.json":
                 self._send(200, json.dumps({"valid": True, "sessionId": "TESTSESSION1234"}),
                            "application/json")
             else:
@@ -165,12 +181,16 @@ class Handler(BaseHTTPRequestHandler):
     def _parse(body):
         if body.startswith("JSONDATA: "):
             return json.loads(body[len("JSONDATA: "):])
-        out = {}
-        for line in body.split("\r\n"):
-            if "=" in line:
-                k, _, v = line.partition("=")
-                out[k.strip()] = v.strip()
-        return out
+        if "\r\n" in body:
+            out = {}
+            for line in body.split("\r\n"):
+                if "=" in line:
+                    k, _, v = line.partition("=")
+                    out[k.strip()] = v.strip()
+            return out
+        # Archer C6 sends sign/data as two ordinary form fields in one line.
+        # The client percent-encodes them the way jQuery does, so decode here.
+        return dict(urllib.parse.parse_qsl(body, keep_blank_values=True))
 
 
 def run(port=0):
@@ -199,6 +219,7 @@ if __name__ == "__main__":
         (f"{root}/tl-wr841n/v14-fw-evidence/api.json", "TL-WR841N rsa-aes  /cgi/login"),
         (f"{root}/tl-wr840n/v6-fw-evidence/api.json",   "TL-WR840N rsa-aes  /cgi/login"),
         (f"{root}/tl-wr940n/v6-fw-evidence/api.json",   "TL-WR940N dynaform /login/login.json"),
+        (f"{root}/archer-c6/v2-fw-evidence/api.json",   "ARCHER-C6 dynaform /login?form=login"),
     ]
     ok = True
     for path, label in cases:

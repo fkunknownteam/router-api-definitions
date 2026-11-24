@@ -7,6 +7,60 @@ would notice, not just what was edited.
 
 ---
 
+## tplink/ARCHER-C6 — 1.0.0 — 2026-11-24
+
+### Added — Archer C6 (AC1200), hardware V2 and V2.80
+117 endpoints and a working login, derived from TP-Link's own firmware rather
+than from a device: `ArcherC6v2_us_tw_c6us-up-ver1-2-1-P1[20260902-rel38654].bin`,
+firmware 1.2.1 Build 260902 (US), published 2026-10-19. 46 of the 117 are
+writes.
+
+The login is the same challenge family as TL-WR840N/WR841N and TL-WR940N, but a
+different build of it — three differences that would each break a naive client:
+
+```
+issuer    GET  /login?form=auth  ->  {"key":[<nn>,<ee>],"seq":<n>}
+          the key is a two-element ARRAY, not named fields
+keyReport k=<key>&i=<iv>          not key=/iv=
+envelope  POST /login?form=login  sign=<hex>&data=<b64>
+          two percent-encoded form fields, not a CRLF-framed body
+payload   operation=login&password=<raw password>
+          not username=<user>&password=<md5>
+```
+
+The signed string is still `%keyReport%&h=<md5>&s=<seq+len(data)>`, and the RSA
+still signs `k-11`-byte chunks (53 bytes at 512 bits). Success is a `stok` token
+in the JSON reply, not a cookie.
+
+### Verified how, without a router
+1. The firmware's own `tpEncrypt.js`, `encrypt.js` and `cryptoJS.min.js` were
+   executed under Node with a fixed key and IV. The Python port reproduced the
+   MD5, the base64 ciphertext and the signed string **byte for byte**:
+   `172eee54aa664e9dd0536b063796e54e` and
+   `k=0123456789012345&i=0011223344556677&h=172eee…&s=56694`.
+2. `tools/handshake_test.py` now stands up a server holding the RSA private key,
+   verifies the signature, recovers the AES key from inside it and decrypts the
+   payload. Run in CI.
+
+### Changed — the engine, driven by the document
+- `session.login.challenge.payloadTemplate` replaces the hardcoded plaintext. It
+  was assumed every build signs `username=<user>&password=<hash>`; the C6 signs
+  `operation=login&password=<raw>`. A build that differs now says so instead of
+  being unsupported.
+- `success.kind: "json-token"` with `tokenField`, for devices that answer with a
+  token rather than a cookie.
+- JSON issuer maps may index arrays (`key.0`, `key.1`).
+- Single-line envelopes are percent-encoded before sending. The firmware builds
+  them with jQuery, which encodes the value; sending raw base64 invites a form
+  parser to turn `+` into a space. JSONDATA envelopes are left raw.
+
+### Not verified
+No C6 was present, so nothing here is confirmed against a real device. The
+handshake is proven *constructible* — correct signatures, correct ciphertext —
+not proven *accepted*.
+
+---
+
 ## tplink/TL-WR840N, TL-WR841N, TL-WR940N — 1.1.0 — 2026-11-23
 
 ### Added — the login handshake is now known

@@ -384,7 +384,15 @@ class RouterClient:
             raise DefinitionError(f"unsupported challenge hash {ch.get('hash')!r}")
         hash_hex = hashlib.md5((user + pwd).encode("utf-8")).hexdigest()
 
-        if spec.get("payloadEncoding") == "json":
+        if ch.get("payloadTemplate"):
+            # The build decides the plaintext, not the family. The Archer C6
+            # sends operation=login&password=<raw password>; the CGI builds send
+            # username=<user>&password=<hash>. Both are legitimate.
+            payload = (ch["payloadTemplate"]
+                       .replace("{username}", user)
+                       .replace("{passwordHash}", hash_hex)
+                       .replace("{password}", pwd))
+        elif spec.get("payloadEncoding") == "json":
             payload = json.dumps({"username": user, "password": pwd})
         else:
             payload = f"username={user}&password={hash_hex}"
@@ -413,6 +421,17 @@ class RouterClient:
         # 5. Frame and send.
         env = spec.get("challenge", {}).get("envelope") or "sign=%sign%\r\ndata=%data%\r\n"
         body = env.replace("%sign%", sign).replace("%data%", ct)
+        is_form = ("\r\n" not in env) and not env.lstrip().startswith("JSONDATA")
+        if is_form:
+            # A single-line envelope is a form body, and the firmware builds it
+            # with jQuery, which percent-encodes each value. base64 contains
+            # '+' and '/', so sending it raw would be corrupted in transit by
+            # any form parser that treats '+' as a space. JSONDATA envelopes are
+            # raw JSON and must be left alone.
+            body = "&".join(
+                f"{k}={urllib.parse.quote(v, safe='')}"
+                for k, _, v in (p.partition("=") for p in body.split("&")) if k
+            )
 
         status, hdrs, raw = self._open(spec["endpoint"], data=body,
                                        method=spec.get("method", "POST"))
@@ -422,6 +441,18 @@ class RouterClient:
         # The device answers with JSON on the dynaform build and a bare code on
         # the CGI build; only a transport-level failure is certain here.
         low = text.strip().lower()
+        success = spec.get("success") or {}
+        if success.get("kind") == "json-token":
+            field = success.get("tokenField") or "stok"
+            try:
+                reply = json.loads(text)
+            except ValueError:
+                raise DeviceError(f"login reply was not JSON: {text.strip()[:80]!r}")
+            token = reply.get(field)
+            if not token:
+                raise DeviceError(f"login rejected by device: {text.strip()[:80]!r}")
+            self.stok = token
+            return True
         if '"valid":false' in low.replace(" ", "") or low in ("0", ""):
             raise DeviceError(f"login rejected by device: {text.strip()[:60]!r}")
         return True
@@ -434,8 +465,16 @@ class RouterClient:
         if fmt == "json":
             doc = json.loads(text)
             def dig(path):
+                # Dotted path over objects, with numeric segments indexing arrays:
+                # the Archer C6 answers {"key":[nn,ee],"seq":...}, so the map is
+                # key.0 / key.1 rather than key/nn.
                 cur = doc
                 for part in path.split("."):
+                    if isinstance(cur, list):
+                        if not part.isdigit() or int(part) >= len(cur):
+                            return None
+                        cur = cur[int(part)]
+                        continue
                     if not isinstance(cur, dict) or part not in cur:
                         return None
                     cur = cur[part]

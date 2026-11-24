@@ -50,6 +50,13 @@ jobs:
       - name: Self test the Python client against every definition
         run: python3 tools/selftest.py
 
+      # Proves the challenge logins end to end: the server issues a real RSA key,
+      # verifies the client's signature with the private half, recovers the AES
+      # key from inside it and decrypts the payload. A wrong byte anywhere in the
+      # crypto fails this step.
+      - name: challenge handshake test
+        run: python3 tools/handshake_test.py
+
       - name: Self test the Android engine against every definition
         run: bash tools/java_selftest.sh
 

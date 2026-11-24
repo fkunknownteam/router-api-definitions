@@ -177,6 +177,11 @@ public final class RouterClient {
                             + " was never captured");
         }
 
+        if ("challenge".equals(Json.str(spec, "kind"))) {
+            loginChallenge(spec);
+            return;
+        }
+
         Map<String, Object> bodySpec = Json.obj(spec, "body");
         Map<String, String> body = new LinkedHashMap<>();
         if (bodySpec != null) {
@@ -230,6 +235,181 @@ public final class RouterClient {
         send(ep, null, Json.str(spec, "method") == null ? "GET" : Json.str(spec, "method"),
                 null, mainReferer());
         cookies.getCookieStore().removeAll();
+    }
+
+    /**
+     * Execute a challenge/response login, driven entirely by the document.
+     *
+     * The device issues an RSA public key and a nonce; the client invents an
+     * AES key, encrypts the credentials with it, and reports that key inside an
+     * RSA signature. The device recovers the key by verifying the signature.
+     * Nothing here is device-specific.
+     */
+    private void loginChallenge(Map<String, Object> spec) throws IOException, DeviceException {
+        Map<String, Object> ch = Json.obj(spec, "challenge");
+        if (ch == null) throw new DefinitionException("session.login.challenge is missing");
+        Map<String, Object> iss = Json.obj(ch, "issuer");
+        Map<String, Object> cipher = Json.obj(ch, "cipher");
+        Map<String, Object> sig = Json.obj(ch, "signature");
+        if (iss == null || cipher == null || sig == null) {
+            throw new DefinitionException("challenge.issuer, cipher and signature are all required");
+        }
+
+        // 1. Ask for the public key and nonce.
+        Response r = send(Json.str(iss, "endpoint"), null,
+                orDefault(Json.str(iss, "method"), "GET"), null, null);
+        String text = new String(r.body, StandardCharsets.UTF_8);
+        Map<String, Object> extract = Json.obj(iss, "extract");
+        String nn = extractValue(text, extract, "nn");
+        String ee = extractValue(text, extract, "ee");
+        String seq = extractValue(text, extract, "seq");
+        if (nn == null || nn.isEmpty()) {
+            throw new DefinitionException(d.model() + ": " + Json.str(iss, "endpoint")
+                    + " returned no RSA modulus; cannot build a challenge");
+        }
+
+        // 2. Credentials, hashed the way the document says.
+        String hashKind = Json.str(ch, "hash");
+        if (!"md5-hex-of-username-plus-password".equals(hashKind)) {
+            throw new DefinitionException("unsupported challenge hash " + hashKind);
+        }
+        String user = username == null || username.isEmpty() ? "admin" : username;
+        String pwd = password == null ? "" : password;
+        String hashHex = CipherKit.md5Hex(user + pwd);
+
+        String payload;
+        if ("json".equals(Json.str(spec, "payloadEncoding"))) {
+            payload = "{\"username\":\"" + user + "\",\"password\":\"" + pwd + "\"}";
+        } else {
+            payload = "username=" + user + "&password=" + hashHex;
+        }
+
+        // 3. Invent the AES key the device will recover from our signature.
+        if (!"aes-128-cbc-base64".equals(Json.str(cipher, "type"))) {
+            throw new DefinitionException("unsupported challenge cipher " + Json.str(cipher, "type"));
+        }
+        if (!"digits".equals(Json.str(cipher, "charset"))) {
+            throw new DefinitionException("unsupported key charset " + Json.str(cipher, "charset"));
+        }
+        String key = randomDigits(intOf(cipher, "keyChars", 16));
+        String iv = randomDigits(intOf(cipher, "ivChars", 16));
+        String keyReport = orDefault(Json.str(cipher, "keyReport"), "key=%key%&iv=%iv%")
+                .replace("%key%", key).replace("%iv%", iv);
+
+        String data;
+        try {
+            javax.crypto.Cipher c = javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding");
+            c.init(javax.crypto.Cipher.ENCRYPT_MODE,
+                    new javax.crypto.spec.SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "AES"),
+                    new javax.crypto.spec.IvParameterSpec(iv.getBytes(StandardCharsets.UTF_8)));
+            // Portable base64: the engine is also compiled and tested outside
+            // Android, where android.util.Base64 is unavailable.
+            data = java.util.Base64.getEncoder().encodeToString(
+                    c.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
+        } catch (Exception e) {
+            throw new DefinitionException("AES unavailable: " + e.getMessage());
+        }
+
+        // 4. Sign the rendezvous string so the device learns the key.
+        if (!"rsa-pkcs1-v1_5".equals(Json.str(sig, "type"))) {
+            throw new DefinitionException("unsupported signature " + Json.str(sig, "type"));
+        }
+        String plain = orDefault(Json.str(sig, "plaintext"),
+                "%keyReport%&h=%hash%&s=%seqPlusDataLen%")
+                .replace("%keyReport%", keyReport)
+                .replace("%hash%", hashHex)
+                .replace("%seqPlusDataLen%",
+                        String.valueOf((seq == null ? 0L : Long.parseLong(seq.trim())) + data.length()));
+        String sign = rsaEncryptHex(plain, nn, orDefault(ee, "010001"), intOf(sig, "bits", 512));
+
+        // 5. Frame and send.
+        String envelope = orDefault(Json.str(ch, "envelope"), "sign=%sign%\r\ndata=%data%\r\n");
+        byte[] body = envelope.replace("%sign%", sign).replace("%data%", data)
+                .getBytes(StandardCharsets.UTF_8);
+        Response post = send(Json.str(spec, "endpoint"), body,
+                orDefault(Json.str(spec, "method"), "POST"),
+                "application/x-www-form-urlencoded", null);
+        String reply = new String(post.body, StandardCharsets.UTF_8).trim();
+        if (post.status >= 400) {
+            throw new DeviceException("login rejected (status " + post.status
+                    + ", reply " + abbreviate(reply) + ")");
+        }
+        String low = reply.toLowerCase().replace(" ", "");
+        if (low.contains("\"valid\":false") || low.equals("0") || low.isEmpty()) {
+            throw new DeviceException("login rejected by device: " + abbreviate(reply));
+        }
+    }
+
+    /** Read nn/ee/seq out of the issuer reply, per the document's map. */
+    private static String extractValue(String text, Map<String, Object> extract, String which) {
+        if (extract == null) return null;
+        Map<String, Object> map = Json.obj(extract, "map");
+        String field = map == null ? which : orDefault(Json.str(map, which), which);
+        if ("json".equals(Json.str(extract, "format"))) {
+            Object cur = Json.parse(text);
+            for (String part : field.split("\\.")) {
+                if (!(cur instanceof Map)) return null;
+                cur = ((Map<?, ?>) cur).get(part);
+                if (cur == null) return null;
+            }
+            return cur instanceof Number
+                    ? String.valueOf(((Number) cur).longValue()) : String.valueOf(cur);
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("\\b" + java.util.regex.Pattern.quote(field)
+                        + "\\s*=\\s*[\"']?([0-9a-fA-Fx]+)[\"']?").matcher(text);
+        return m.find() ? m.group(1) : null;
+    }
+
+    /**
+     * RSA PKCS#1 v1.5 type-2, split into (k-11)-byte blocks, hex out.
+     * Mirrors the Tom Wu port the vendor UI ships.
+     */
+    private static String rsaEncryptHex(String data, String nnHex, String eeHex, int bits) {
+        java.math.BigInteger n = new java.math.BigInteger(nnHex, 16);
+        java.math.BigInteger e = new java.math.BigInteger(eeHex, 16);
+        byte[] raw = data.getBytes(StandardCharsets.UTF_8);
+        int k = (n.bitLength() + 7) / 8;
+        int step = k - 11;
+        if (step <= 0) throw new DefinitionException("RSA modulus too small (" + k + " bytes)");
+        java.util.Random rnd = new java.util.Random();
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < raw.length; i += step) {
+            int len = Math.min(step, raw.length - i);
+            byte[] block = new byte[k];
+            block[1] = 0x02;
+            int psEnd = k - 3 - len;
+            for (int p = 2; p <= psEnd; p++) {
+                int b;
+                do { b = rnd.nextInt(256); } while (b == 0);
+                block[p] = (byte) b;
+            }
+            System.arraycopy(raw, i, block, k - len, len);
+            String hex = new java.math.BigInteger(1, block).modPow(e, n).toString(16);
+            for (int p = hex.length(); p < bits / 4; p++) out.append('0');
+            out.append(hex);
+        }
+        return out.toString();
+    }
+
+    private static String randomDigits(int count) {
+        java.util.Random rnd = new java.util.Random();
+        StringBuilder sb = new StringBuilder(count);
+        for (int i = 0; i < count; i++) sb.append((char) ('0' + rnd.nextInt(10)));
+        return sb.toString();
+    }
+
+    private static String abbreviate(String s) {
+        return s.length() <= 60 ? s : s.substring(0, 60) + "...";
+    }
+
+    private static String orDefault(String v, String fallback) {
+        return v == null || v.isEmpty() ? fallback : v;
+    }
+
+    private static int intOf(Map<String, Object> m, String key, int fallback) {
+        Object v = m == null ? null : m.get(key);
+        return v instanceof Number ? ((Number) v).intValue() : fallback;
     }
 
     /** Fetch the per-request key from the endpoint the definition names. */

@@ -190,6 +190,39 @@ def encrypt(definition, text, key):
     return base64.b64encode(cipher.encrypt(pad(text.encode("utf-8"), AES.block_size))).decode()
 
 
+def _aes_cbc_b64(plaintext, key, iv):
+    """AES-CBC / Pkcs7, base64. Used by challenge logins, where the key is a
+    digit string the device learns only from our signature."""
+    AES, pad, _ = _aes_cbc()
+    cipher = AES.new(key.encode("ascii"), AES.MODE_CBC, iv.encode("ascii"))
+    return base64.b64encode(
+        cipher.encrypt(pad(plaintext.encode("utf-8"), AES.block_size))).decode()
+
+
+def _rsa_encrypt_hex(data, nn_hex, ee_hex, bits=512):
+    """RSA PKCS#1 v1.5 type-2, split into (k-11)-byte chunks, hex out.
+
+    Mirrors the Tom Wu port the vendor UI ships: the plaintext is cut into
+    blocks that each fit inside the modulus, padded separately, and the hex is
+    zero-padded to bits/4 characters per block.
+    """
+    nn = int(nn_hex, 16)
+    ee = int(ee_hex, 16)
+    raw = data.encode("utf-8") if isinstance(data, str) else data
+    k = (nn.bit_length() + 7) // 8
+    step = k - 11
+    if step <= 0:
+        raise DefinitionError(f"RSA modulus too small ({k} bytes)")
+    out = []
+    for i in range(0, len(raw), step):
+        block = raw[i:i + step]
+        ps_len = k - 3 - len(block)
+        ps = bytes(random.randrange(1, 256) for _ in range(ps_len))
+        m = int.from_bytes(b"\x00\x02" + ps + b"\x00" + block, "big")
+        out.append(format(pow(m, ee, nn), "x").rjust(bits // 4, "0"))
+    return "".join(out)
+
+
 def _multipart(values, fields):
     """Build a multipart/form-data body. A value of the form '@path' is sent as
     a file part, matching how curl and the vendor's own forms do it."""
@@ -223,7 +256,8 @@ def _multipart(values, fields):
 class RouterClient:
     """Executes a definition against one device. Contains no vendor logic."""
 
-    def __init__(self, definition, host=None, use_tls=None, password=None, timeout_s=None, port=None):
+    def __init__(self, definition, host=None, use_tls=None, password=None, username=None,
+                 timeout_s=None, port=None):
         self.d = definition
         self.host = host or definition.api["transport"]["defaultHost"]
         t = definition.api["transport"]
@@ -232,6 +266,9 @@ class RouterClient:
 
         self.timeout = (timeout_s or t.get("requestTimeoutMs", 12000)) / 1000.0
         self.password = password
+        # Most of these devices hard-code the account to 'admin'; challenge
+        # handshakes still hash username+password, so the name must be carried.
+        self.username = username or "admin"
         self.cookies = {}
         self.login_data = None
         self._busy = None
@@ -257,11 +294,19 @@ class RouterClient:
     def _open(self, path, data=None, method=None, referer=None, headers=None):
         url = self.base_url() + path
         body = None
+        raw_body = isinstance(data, (str, bytes))
         if data is not None:
-            body = urllib.parse.urlencode(data).encode()
+            if raw_body:
+                # Challenge envelopes are pre-framed (CRLF-separated, base64
+                # inside). Form-encoding would corrupt them, so send verbatim.
+                body = data.encode() if isinstance(data, str) else data
+            else:
+                body = urllib.parse.urlencode(data).encode()
         req = urllib.request.Request(url, data=body, method=method or ("POST" if body else "GET"))
         if body is not None:
             req.add_header("Content-Type", "application/x-www-form-urlencoded")
+        if raw_body:
+            req.add_header("Content-Length", str(len(body)))
         if referer:
             req.add_header("Referer", referer)
         if self.cookies:
@@ -311,6 +356,101 @@ class RouterClient:
             print(f"{ep['id']:34s} {ep['method']:4s} {ep['path']:44s} {' '.join(flags)}")
 
     # -- session ----------------------------------------------------------
+    def _login_challenge(self, spec):
+        """Execute a challenge/response login, driven entirely by the document.
+
+        Nothing here is device-specific: the exchange is read out of the
+        definition, so a new model only needs a new definition. Every step is
+        refused loudly rather than guessed when the document is incomplete.
+        """
+        ch = spec.get("challenge") or {}
+        iss = ch.get("issuer") or {}
+        cipher = ch.get("cipher") or {}
+        sig = ch.get("signature") or {}
+
+        # 1. Ask the device for its public key and nonce.
+        status, hdrs, raw = self._open(iss["endpoint"], method=iss.get("method", "GET"))
+        text = raw.decode("utf-8", "replace")
+        nn, ee, seq = self._extract_challenge(text, iss.get("extract") or {})
+        if not nn:
+            raise DefinitionError(
+                f"{self.d.model}: {iss['endpoint']} returned no RSA modulus; "
+                "cannot build a challenge")
+
+        # 2. Build the plaintext payload exactly as the single-request form would.
+        user = getattr(self, "username", "") or "admin"
+        pwd = getattr(self, "password", "") or ""
+        if ch.get("hash") != "md5-hex-of-username-plus-password":
+            raise DefinitionError(f"unsupported challenge hash {ch.get('hash')!r}")
+        hash_hex = hashlib.md5((user + pwd).encode("utf-8")).hexdigest()
+
+        if spec.get("payloadEncoding") == "json":
+            payload = json.dumps({"username": user, "password": pwd})
+        else:
+            payload = f"username={user}&password={hash_hex}"
+
+        # 3. Generate the AES key the device will recover from our signature.
+        if cipher.get("type") != "aes-128-cbc-base64":
+            raise DefinitionError(f"unsupported challenge cipher {cipher.get('type')!r}")
+        if cipher.get("charset") != "digits":
+            raise DefinitionError(f"unsupported key charset {cipher.get('charset')!r}")
+        key = "".join(str(random.randrange(10)) for _ in range(int(cipher["keyChars"])))
+        iv = "".join(str(random.randrange(10)) for _ in range(int(cipher["ivChars"])))
+        key_report = (cipher.get("keyReport") or "key=%key%&iv=%iv%")
+        key_report = key_report.replace("%key%", key).replace("%iv%", iv)
+
+        ct = _aes_cbc_b64(payload, key, iv)
+
+        # 4. Sign the rendezvous string so the device learns the key.
+        if sig.get("type") != "rsa-pkcs1-v1_5":
+            raise DefinitionError(f"unsupported signature {sig.get('type')!r}")
+        plain = (sig.get("plaintext") or "%keyReport%&h=%hash%&s=%seqPlusDataLen%")
+        plain = (plain.replace("%keyReport%", key_report)
+                      .replace("%hash%", hash_hex)
+                      .replace("%seqPlusDataLen%", str(int(seq or 0) + len(ct))))
+        sign = _rsa_encrypt_hex(plain, nn, ee or "010001", int(sig.get("bits", 512)))
+
+        # 5. Frame and send.
+        env = spec.get("challenge", {}).get("envelope") or "sign=%sign%\r\ndata=%data%\r\n"
+        body = env.replace("%sign%", sign).replace("%data%", ct)
+
+        status, hdrs, raw = self._open(spec["endpoint"], data=body,
+                                       method=spec.get("method", "POST"))
+        text = raw.decode("utf-8", "replace")
+        if status >= 400:
+            raise DeviceError(f"login rejected (status {status}, reply {text.strip()[:120]!r})")
+        # The device answers with JSON on the dynaform build and a bare code on
+        # the CGI build; only a transport-level failure is certain here.
+        low = text.strip().lower()
+        if '"valid":false' in low.replace(" ", "") or low in ("0", ""):
+            raise DeviceError(f"login rejected by device: {text.strip()[:60]!r}")
+        return True
+
+    @staticmethod
+    def _extract_challenge(text, extract):
+        """Pull nn/ee/seq out of the issuer reply, per the document's map."""
+        fmt = extract.get("format")
+        mapping = extract.get("map") or {}
+        if fmt == "json":
+            doc = json.loads(text)
+            def dig(path):
+                cur = doc
+                for part in path.split("."):
+                    if not isinstance(cur, dict) or part not in cur:
+                        return None
+                    cur = cur[part]
+                return cur
+            return (dig(mapping.get("nn", "nn")),
+                    dig(mapping.get("ee", "ee")),
+                    dig(mapping.get("seq", "seq")))
+        # js-vars: the reply is JavaScript assigning var nn="...";
+        def grab(name):
+            m = re.search(rf'\b{name}\s*=\s*["\']?([0-9a-fA-Fx]+)["\']?', text)
+            return m.group(1) if m else None
+        return (grab(mapping.get("nn", "nn")),
+                grab(mapping.get("ee", "ee")),
+                grab(mapping.get("seq", "seq")))
+
     def _encode_password(self, encoding):
         pw = self.password or ""
         if encoding == "plain":
@@ -335,6 +475,8 @@ class RouterClient:
             raise DefinitionError(
                 f"login handshake for {self.d.model} {self.d.variant} was never captured; "
                 "the definition cannot sign in until a capture exists")
+        if spec.get("kind") == "challenge":
+            return self._login_challenge(spec)
         body = dict(spec.get("body") or {})
         for k, v in list(body.items()):
             if isinstance(v, str) and "{password}" in v:

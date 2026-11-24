@@ -7,6 +7,71 @@ would notice, not just what was edited.
 
 ---
 
+## tplink/TL-WR840N, TL-WR841N, TL-WR940N — 1.1.0 — 2026-11-23
+
+### Added — the login handshake is now known
+These three builds' login pages were still in the extracted firmware, so the
+handshake could be read straight out of the device's own JavaScript instead of
+being marked unknown. Two distinct families emerged:
+
+**TL-WR840N and TL-WR841N** (`web/frame/login.htm` is byte-identical between
+them) use a CGI challenge:
+
+```
+GET  /cgi/getParm     -> var nn="<rsa modulus>"; var ee="<exponent>"; var seq="<nonce>";
+hash  = MD5(username + password)                 lowercase hex
+key   = 16 random digits, iv = 16 random digits  (AES-128)
+data  = base64(AES-CBC-Pkcs7(key, iv, payload))
+sign  = RSA-PKCS1v1.5(key="key=..&iv=..&h=<hash>&s=<seq + len(data)>")
+POST /cgi/login       "sign=<sign hex>\r\ndata=<data>\r\n"
+```
+
+**TL-WR940N** uses the dynaform scheme:
+
+```
+GET  /login/getRsa.json -> {"rsa":{"nn":..,"mm":..},"seq":..}
+POST /login/login.json  "JSONDATA: {"sign":"<hex>","data":"<base64>"}"
+```
+
+### Verified how, without a router
+- **Against the firmware's own code.** The shipped `tpEncrypt.js` and
+  `cryptoJS.min.js` were executed under Node with a fixed key/IV, and the
+  output compared with the reimplementation: AES ciphertext, MD5 digest and
+  signed plaintext all matched byte for byte.
+- **End to end against an adversary.** `tools/handshake_test.py` stands up a
+  server holding a real RSA private key. It verifies our signature, recovers
+  the AES key from inside it, decrypts the payload and checks the password. All
+  three run in CI, so a wrong byte in the crypto fails the build.
+
+### Still not verified
+- No live device, so **no reply body has ever been captured**. The login is
+  proved to be *constructed correctly*, not proved to be *accepted by your
+  router*. A first real login is the remaining confirmation.
+- The remaining six TP-Link definitions keep `verified: not-captured` and still
+  refuse to log in, but for two different reasons:
+  - **TL-WR820N and TL-WR844N** do have a web UI, but it is a later generation
+    that does not use URLs at all. The UI calls
+    `ajax.request({proxy:"loginProxy", method:"login"})`, which the framework
+    turns into `$.su.url("?code=" + HTTP_OP)` — numeric opcodes over one CGI
+    entry point, with a `getLocalTmpKey` / `resetEncryptor` handshake. The
+    opcode table was not recovered, so this family is still unmodelled.
+  - **TL-WR845N, TL-WR846N, TL-WR850N, ARCHER-C24** have no extracted firmware
+    image in the source material at all, so there is nothing to read.
+
+### Changed
+- `schema/api-definition.schema.json`: `session.login` gained `kind`
+  (`single`/`challenge`), `payloadEncoding`, and a `challenge` block describing
+  the issuer, hash, cipher, signature, envelope and payload. A new model with a
+  challenge login needs only a new definition — the client executes it
+  generically.
+- `tools/routerapi.py`: `login()` executes `kind: challenge` end to end; the
+  HTTP layer sends pre-framed envelopes verbatim instead of form-encoding them;
+  `RouterClient` now carries a `username`, which the handshake hashes.
+- `tools/selftest.py`: records a documented challenge handshake as a pass and
+  defers its proof to `tools/handshake_test.py`.
+
+---
+
 ## tplink/* — 1.0.0 — 2026-11-23
 
 ### Added

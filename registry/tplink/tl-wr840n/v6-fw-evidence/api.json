@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/api-definition.schema.json",
   "schemaVersion": "1.0",
-  "definitionVersion": "1.0.0",
+  "definitionVersion": "1.1.0",
   "vendor": "tplink",
   "vendorName": "TP-Link",
   "model": "TL-WR840N",
@@ -33,13 +33,44 @@
     "type": "cookie-on-login",
     "maxConcurrentSessions": 1,
     "login": {
-      "endpoint": "/",
-      "method": "POST",
-      "verified": "not-captured",
-      "notes": "The login form itself was not captured for this build, so no password encoding is claimed. Until a capture exists the client must refuse to guess the handshake.",
       "success": {
         "kind": "cookie-set"
-      }
+      },
+      "kind": "challenge",
+      "verified": "ui-code",
+      "endpoint": "/cgi/login",
+      "method": "POST",
+      "payloadEncoding": "form",
+      "challenge": {
+        "issuer": {
+          "endpoint": "/cgi/getParm",
+          "method": "GET",
+          "extract": {
+            "format": "js-vars",
+            "map": {
+              "nn": "nn",
+              "ee": "ee",
+              "seq": "seq"
+            }
+          }
+        },
+        "hash": "md5-hex-of-username-plus-password",
+        "cipher": {
+          "type": "aes-128-cbc-base64",
+          "keyChars": 16,
+          "ivChars": 16,
+          "charset": "digits",
+          "keyReport": "key=%key%&iv=%iv%"
+        },
+        "signature": {
+          "type": "rsa-pkcs1-v1_5",
+          "bits": 512,
+          "plaintext": "%keyReport%&h=%hash%&s=%seqPlusDataLen%"
+        },
+        "envelope": "sign=%sign%\r\ndata=%data%\r\n",
+        "payload": "form-body"
+      },
+      "notes": "Handshake derived from this build's own web/js/tpEncrypt.js and web/js/lib.js. Proved byte-for-byte against that JavaScript offline (see CHANGELOG); not yet exercised on hardware, so a first live login should be treated as the real confirmation."
     }
   },
   "identify": {
@@ -1016,12 +1047,16 @@
       {
         "kind": "firmware-image",
         "ref": "routerctl extraction of TL-WR840N firmware; 76 UI paths read from api_map.md"
+      },
+      {
+        "kind": "firmware-image",
+        "ref": "TL-WR840N extracted web/ JavaScript, the login page itself"
       }
     ],
-    "notes": "Paths and form fields were read out of the firmware image. No live device was reachable, so no reply body was ever captured and nothing here is live-verified.",
+    "notes": "Identical login page to the TL-WR841N build (byte-identical web/frame/login.htm), so the same /cgi/getParm handshake applies. Proved the same way.",
     "unsupported": [
       "Response bodies: no live device was available, so no reply was captured",
-      "Login handshake: form and encoding not captured for this build"
+      "Response bodies: no live device was available, so no reply body was captured"
     ]
   }
 }

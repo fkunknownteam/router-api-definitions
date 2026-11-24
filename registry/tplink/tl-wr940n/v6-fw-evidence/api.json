@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/schema/api-definition.schema.json",
   "schemaVersion": "1.0",
-  "definitionVersion": "1.0.0",
+  "definitionVersion": "1.1.0",
   "vendor": "tplink",
   "vendorName": "TP-Link",
   "model": "TL-WR940N",
@@ -33,13 +33,44 @@
     "type": "cookie-on-login",
     "maxConcurrentSessions": 1,
     "login": {
-      "endpoint": "/",
-      "method": "POST",
-      "verified": "not-captured",
-      "notes": "The login form itself was not captured for this build, so no password encoding is claimed. Until a capture exists the client must refuse to guess the handshake.",
       "success": {
         "kind": "cookie-set"
-      }
+      },
+      "kind": "challenge",
+      "verified": "ui-code",
+      "endpoint": "/login/login.json",
+      "method": "POST",
+      "payloadEncoding": "json",
+      "challenge": {
+        "issuer": {
+          "endpoint": "/login/getRsa.json",
+          "method": "GET",
+          "extract": {
+            "format": "json",
+            "map": {
+              "nn": "rsa.nn",
+              "ee": "rsa.mm",
+              "seq": "seq"
+            }
+          }
+        },
+        "hash": "md5-hex-of-username-plus-password",
+        "cipher": {
+          "type": "aes-128-cbc-base64",
+          "keyChars": 16,
+          "ivChars": 16,
+          "charset": "digits",
+          "keyReport": "key=%key%&iv=%iv%"
+        },
+        "signature": {
+          "type": "rsa-pkcs1-v1_5",
+          "bits": 512,
+          "plaintext": "%keyReport%&h=%hash%&s=%seqPlusDataLen%"
+        },
+        "envelope": "JSONDATA: {\"sign\":\"%sign%\",\"data\":\"%data%\"}",
+        "payload": "json-object"
+      },
+      "notes": "Handshake derived from this build's own web/login/dynaform_encrypt.js and web/login/getRsa.json. Proved byte-for-byte against that JavaScript offline; not yet exercised on hardware."
     }
   },
   "identify": {
@@ -1339,12 +1370,16 @@
       {
         "kind": "firmware-image",
         "ref": "routerctl extraction of TL-WR940N firmware; 101 UI paths read from api_map.md"
+      },
+      {
+        "kind": "firmware-image",
+        "ref": "TL-WR940N extracted web/ JavaScript, the login page itself"
       }
     ],
-    "notes": "Paths and form fields were read out of the firmware image. No live device was reachable, so no reply body was ever captured and nothing here is live-verified.",
+    "notes": "Handshake derived from this build's own web/login/dynaform_encrypt.js and web/login/getRsa.json: /login/getRsa.json returns rsa.nn + seq, and /login/login.json takes 'JSONDATA: {sign,data}'. Proved end to end (tools/handshake_test.py).",
     "unsupported": [
       "Response bodies: no live device was available, so no reply was captured",
-      "Login handshake: form and encoding not captured for this build"
+      "Response bodies: no live device was available, so no reply body was captured"
     ]
   }
 }

@@ -137,7 +137,7 @@
             "label": "Hardware V6 — firmware 20260304",
             "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr840n/v6-fw-evidence/api.json",
             "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr840n/v6-fw-evidence/capabilities.json",
-            "definitionVersion": "1.0.0",
+            "definitionVersion": "1.1.0",
             "schemaVersion": "1.0",
             "firmware": "20260304",
             "matchPrefix": null,
@@ -147,8 +147,8 @@
             ],
             "endpointCount": 76,
             "sha256": {
-              "api": "a5794d1ad8409636cc8fe4453fd7dc5871cc3635b9fb9210719e29e9bd6ffd0a",
-              "capabilities": "16b08226411cf76692b54b348307b3aa6e3f00f339a1c4e52a8917057083cbbc"
+              "api": "18bb3a64cf5f4ca2fd2890e8cb6e8de53727ff143bfb6282edfc32a173432f1e",
+              "capabilities": "3d10211582184c060dcdbd306ee409edddbfdda7c80a056fb395ba81756dd8de"
             }
           }
         ]
@@ -163,7 +163,7 @@
             "label": "Hardware V14 — firmware 20260821",
             "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr841n/v14-fw-evidence/api.json",
             "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr841n/v14-fw-evidence/capabilities.json",
-            "definitionVersion": "1.0.0",
+            "definitionVersion": "1.1.0",
             "schemaVersion": "1.0",
             "firmware": "20260821",
             "matchPrefix": null,
@@ -173,8 +173,8 @@
             ],
             "endpointCount": 94,
             "sha256": {
-              "api": "d6c7c85baa313ed261978554db980d215ca92f9607f6019ea6446abe46fc9ea4",
-              "capabilities": "799d1ce01f00b013365112a71be69929f2533ee33af910c475781f7aeb6faea0"
+              "api": "1d50188f233153b8cc054eb0844483eaec770506f5231e7e2826791cf0a03d10",
+              "capabilities": "e4efbb37845a229c4a89571ba9ddb9e50218c1125f9d0bccb80035ebbcb059f5"
             }
           }
         ]
@@ -294,7 +294,7 @@
             "label": "Hardware V6 — firmware 20260528",
             "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr940n/v6-fw-evidence/api.json",
             "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr940n/v6-fw-evidence/capabilities.json",
-            "definitionVersion": "1.0.0",
+            "definitionVersion": "1.1.0",
             "schemaVersion": "1.0",
             "firmware": "20260528",
             "matchPrefix": null,
@@ -304,8 +304,8 @@
             ],
             "endpointCount": 101,
             "sha256": {
-              "api": "40a6e2331f291051ac2eddc9b6775ea7735d36699eb47a854238d5aa7359aa91",
-              "capabilities": "19bd2372ca4d45f0ba4c6391bf28f5969477950a5ad73e30ee77d44f9a65515c"
+              "api": "53aef28425a66d73296d19212ed446d1ad47d304d8c7cd7ab4fc769fc427180c",
+              "capabilities": "a6ac4fab9fe246488af832a574bb66d0f60aba371c5f8f7000533e3f0d25683d"
             }
           }
         ]
@@ -413,7 +413,7 @@
       "label": "Hardware V6 — firmware 20260304",
       "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr840n/v6-fw-evidence/api.json",
       "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr840n/v6-fw-evidence/capabilities.json",
-      "definitionVersion": "1.0.0",
+      "definitionVersion": "1.1.0",
       "schemaVersion": "1.0",
       "firmware": "20260304",
       "matchPrefix": null,
@@ -423,8 +423,8 @@
       ],
       "endpointCount": 76,
       "sha256": {
-        "api": "a5794d1ad8409636cc8fe4453fd7dc5871cc3635b9fb9210719e29e9bd6ffd0a",
-        "capabilities": "16b08226411cf76692b54b348307b3aa6e3f00f339a1c4e52a8917057083cbbc"
+        "api": "18bb3a64cf5f4ca2fd2890e8cb6e8de53727ff143bfb6282edfc32a173432f1e",
+        "capabilities": "3d10211582184c060dcdbd306ee409edddbfdda7c80a056fb395ba81756dd8de"
       }
     },
     {
@@ -432,7 +432,7 @@
       "label": "Hardware V14 — firmware 20260821",
       "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr841n/v14-fw-evidence/api.json",
       "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr841n/v14-fw-evidence/capabilities.json",
-      "definitionVersion": "1.0.0",
+      "definitionVersion": "1.1.0",
       "schemaVersion": "1.0",
       "firmware": "20260821",
       "matchPrefix": null,
@@ -442,8 +442,8 @@
       ],
       "endpointCount": 94,
       "sha256": {
-        "api": "d6c7c85baa313ed261978554db980d215ca92f9607f6019ea6446abe46fc9ea4",
-        "capabilities": "799d1ce01f00b013365112a71be69929f2533ee33af910c475781f7aeb6faea0"
+        "api": "1d50188f233153b8cc054eb0844483eaec770506f5231e7e2826791cf0a03d10",
+        "capabilities": "e4efbb37845a229c4a89571ba9ddb9e50218c1125f9d0bccb80035ebbcb059f5"
       }
     },
     {
@@ -528,7 +528,7 @@
       "label": "Hardware V6 — firmware 20260528",
       "apiUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr940n/v6-fw-evidence/api.json",
       "capabilitiesUrl": "https://raw.githubusercontent.com/fkunknownteam/router-api-definitions/main/registry/tplink/tl-wr940n/v6-fw-evidence/capabilities.json",
-      "definitionVersion": "1.0.0",
+      "definitionVersion": "1.1.0",
       "schemaVersion": "1.0",
       "firmware": "20260528",
       "matchPrefix": null,
@@ -538,8 +538,8 @@
       ],
       "endpointCount": 101,
       "sha256": {
-        "api": "40a6e2331f291051ac2eddc9b6775ea7735d36699eb47a854238d5aa7359aa91",
-        "capabilities": "19bd2372ca4d45f0ba4c6391bf28f5969477950a5ad73e30ee77d44f9a65515c"
+        "api": "53aef28425a66d73296d19212ed446d1ad47d304d8c7cd7ab4fc769fc427180c",
+        "capabilities": "a6ac4fab9fe246488af832a574bb66d0f60aba371c5f8f7000533e3f0d25683d"
       }
     }
   ]

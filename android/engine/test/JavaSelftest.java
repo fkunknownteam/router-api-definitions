@@ -56,6 +56,18 @@ public final class JavaSelftest {
             return;
         }
 
+        // A challenge login needs a server that issues a key and verifies the
+        // signature; the generic mock deliberately does not, so record the gap
+        // rather than reporting a false failure.
+        Map<String, Object> sessLogin = Json.obj(d.session(), "login");
+        if (sessLogin != null && "challenge".equals(Json.str(sessLogin, "kind"))) {
+            Map<String, Object> ch = Json.obj(sessLogin, "challenge");
+            System.out.println("  ^ challenge handshake documented ("
+                    + Json.str(Json.obj(ch, "issuer"), "endpoint") + " -> "
+                    + Json.str(sessLogin, "endpoint") + "); proved by tools/handshake_test.py");
+            return;
+        }
+
         // wrong password must be refused
         RouterClient bad = new RouterClient(d, "127.0.0.1", port, false);
         bad.setCredentials("admin", "definitely-not-the-password");
